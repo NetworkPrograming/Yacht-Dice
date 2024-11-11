@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.Vector;
-//test
+
 public class YachtDiceClient extends JFrame {
 
     private String serverAddress;
