@@ -106,7 +106,7 @@ public class GameGUI extends JFrame {
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
-       // panel.setOpaque(false); // 패널을 투명하게 설정
+        panel.setOpaque(false); // 패널을 투명하게 설정
 
             //채팅 컴포넌트 구현
 
