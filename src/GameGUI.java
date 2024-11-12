@@ -7,9 +7,9 @@ import java.util.Random;
 
 public class GameGUI extends JFrame {
 
-    private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpeg")).getImage();
+    private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpeg")).getImage();
-    private Image chatBoard = new ImageIcon(getClass().getResource("/resources/chatBoard.jpeg")).getImage();
+
     JButton giveUpButton = new JButton("Give Up");
     JTextArea textArea = new JTextArea(10, 20);
 
@@ -41,7 +41,7 @@ public class GameGUI extends JFrame {
 
         // 점수 패널을 레이어 1에 추가
         JPanel scorePanel = ScorePanel();
-        scorePanel.setBounds(0, 0, 330, 750); // 점수판 크기 설정
+        scorePanel.setBounds(0, 0, 360, 750); // 점수판 크기 설정
         layeredPane.add(scorePanel, Integer.valueOf(1)); // 레이어 1에 점수판 추가
 
         // 채팅 패널을 레이어 2에 추가
@@ -63,7 +63,7 @@ public class GameGUI extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 // 배경 이미지를 그리기
-                g.drawImage(backgroundImage, 330, 0, 830, 750, this);
+                g.drawImage(backgroundImage, 330, 0, 1200, 750, this);
             }
         };
         panel.setLayout(null); // null 레이아웃 사용
@@ -77,7 +77,7 @@ public class GameGUI extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 // 점수판 이미지를 그리기
-                g.drawImage(scoreBoard, 0, 0, 330, 750, this);
+                g.drawImage(scoreBoard, 0, 0, 360, 750, this);
             }
         };
         panel.setLayout(null); // null 레이아웃 사용
@@ -105,14 +105,11 @@ public class GameGUI extends JFrame {
     } */
 
     private JPanel ChatPanel() { // 채팅 패널
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                // 채팅판 이미지를 그리기
-                g.drawImage(chatBoard, 0, 0, 320, 750, this);
-            }
-        };
+        JPanel panel = new JPanel();
+       // panel.setOpaque(false); // 패널을 투명하게 설정
+
+            //채팅 컴포넌트 구현
+
         panel.setLayout(null); // null 레이아웃 사용
         return panel;
     }
