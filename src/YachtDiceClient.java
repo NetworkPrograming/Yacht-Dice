@@ -31,6 +31,7 @@ public class YachtDiceClient extends JFrame {
     private String uid;
 
     private ObjectOutputStream out;
+    private ObjectInputStream in;
 
     private Thread receiveThread = null;
 
@@ -362,11 +363,14 @@ public class YachtDiceClient extends JFrame {
 
                     // 비밀번호가 맞는 경우
                     printDisplay(roomTitle + " 비밀 방에 접속했습니다. 비밀번호 : " + password);
+                    // 방에 접속하면 새로운 창을 띄워서 게임을 시작할 수 있도록 해야 함
+                    openRoomWindow(roomTitle);  // 방 접속 후 새로운 창 열기
                     break;
                 }
             } else {
                 // 비밀번호가 필요 없는 경우
                 printDisplay(roomTitle + "방에 접속했습니다.");
+                openRoomWindow(roomTitle);
             }
         } else if (flag == 0) {
             //flag 가 0이면 방을 생성하자마자 방에 들어가는 경우
@@ -375,12 +379,26 @@ public class YachtDiceClient extends JFrame {
                 printDisplay(roomTitle + " 비밀 방에 접속했습니다. 비밀번호 : " + password);
                 sendRoomtitle();
                 sendPassword();
+                openRoomWindow(roomTitle);
             } else {
                 // 비밀 방이 아닌 경우
                 printDisplay(roomTitle + "방에 접속했습니다.");
                 sendRoomtitle();
+                openRoomWindow(roomTitle);
             }
         }
+    }
+
+    private void openRoomWindow(String roomTitle) {
+        // 방 접속 후 바로 GameGUI 창을 띄운다
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                GameGUI gameGUI = new GameGUI(in, out);
+                gameGUI.setVisible(true);  // GameGUI 창 보이기
+            }
+        });  // GameGUI 창 바로 실행
+
     }
 
     private void printDisplay(String msg) {

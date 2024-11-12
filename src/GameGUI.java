@@ -2,7 +2,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
+import java.io.*;
 import java.util.Random;
 
 public class GameGUI extends JFrame {
@@ -12,14 +12,20 @@ public class GameGUI extends JFrame {
 
     JButton giveUpButton = new JButton("Give Up");
     JTextArea textArea = new JTextArea(10, 20);
+    private JTextArea chatDisplay; // 채팅 메시지 표시 영역
+    private JTextField chatInput;  // 메시지 입력 필드
+    private JButton sendButton;    // 메시지 보내기 버튼
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
-    public GameGUI() {
+    public GameGUI(ObjectInputStream in,ObjectOutputStream out) {
         super("Yacht-Dice");
-
+        this.in = in;
+        this.out = out;
 
         // 레이아웃을 BorderLayout으로 설정
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(1690, 770));
+        setPreferredSize(new Dimension(1600, 770));
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
@@ -106,13 +112,78 @@ public class GameGUI extends JFrame {
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
-        panel.setOpaque(false); // 패널을 투명하게 설정
+        //panel.setOpaque(false); // 패널을 투명하게 설정
+        panel.setLayout(null);
+        // JTextArea 추가하여 메시지 표시
+        textArea.setEditable(false); // 사용자가 입력할 수 없도록 설정
+        textArea.setBounds(10, 10, 300, 650); // 위치와 크기 설정
+        textArea.setLineWrap(true); // 자동 줄바꿈
+        textArea.setWrapStyleWord(true); // 단어 단위로 줄바꿈
+        textArea.setFont(new Font("Arial", Font.PLAIN, 14)); // 폰트 설정
+        panel.add(textArea); // 텍스트 영역을 패널에 추가
 
-            //채팅 컴포넌트 구현
+        // 메시지 입력 필드
+        chatInput = new JTextField();
+        chatInput.setBounds(10,700,250,40);
+        panel.add(chatInput);
 
-        panel.setLayout(null); // null 레이아웃 사용
+        // 메시지 보내기 버튼
+        sendButton = new JButton("Send");
+        sendButton.setBounds(260,700,50,40);
+        panel.add(sendButton);
+
+
+        // Enter 키와 버튼 클릭으로 메시지 전송
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = chatInput.getText();
+                textArea.append(message + "\n");
+                chatInput.setText("");
+            }
+        });
+
+        chatInput.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = chatInput.getText();
+                textArea.append(message + "\n");
+                chatInput.setText("");
+            }
+        });
+
+        setVisible(true);
+
         return panel;
     }
+
+    private void sendMessageToServer() {
+        String message = chatInput.getText();
+        if (message != null && !message.isEmpty()) {
+            try {
+                // 메시지를 서버로 전송
+                out.writeObject(message + "\n");
+                out.flush();
+                chatInput.setText("");  // 입력 필드 비우기
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void receiveMessageFromServer() {
+        try {
+            String message;
+            while ((message = in.readLine()) != null) {
+                // 서버로부터 받은 메시지를 JTextArea에 추가
+                textArea.append(message + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private JPanel AddDiceComponents() {
         JPanel jPanel = new JPanel();
