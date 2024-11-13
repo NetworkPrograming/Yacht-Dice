@@ -24,7 +24,7 @@ public class GameGUI extends JFrame {
         this.out = out;
 
         // 레이아웃을 BorderLayout으로 설정
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(1600, 770));
         pack();
         setResizable(false);

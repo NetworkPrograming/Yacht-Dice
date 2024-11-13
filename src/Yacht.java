@@ -30,8 +30,8 @@ public class Yacht implements Serializable {
     }
 
     // roomTitle과 passWord를 포함한 생성자 추가
-    public Yacht(String userID, int code, String message, ImageIcon image, long size) {
-        this(userID, code, message, image, size, null, null);
+    public Yacht(String userID, int code, String message, ImageIcon image, long size, String password) {
+        this(userID, code, message, image, size, null, password);
     }
 
     public Yacht(String userID, int code) {
@@ -39,11 +39,23 @@ public class Yacht implements Serializable {
     }
 
     public Yacht(String userID, int code, String message) {
-        this(userID, code, message, null, 0); // roomTitle과 passWord는 null로 초기화
+        this(userID, code, message, null, 0, null); // roomTitle과 passWord는 null로 초기화
         if (code == MODE_TX_ROOMNAME) {
             this.roomTitle = message; // message를 roomTitle로 사용
-        } else if (code == MODE_TX_PASSWORD) {
-            this.passWord = message; // message를 passWord로 사용
+        }
+        else if (code == MODE_LOGIN) {
+            this.message = message; // message를 message 사용
+        }
+        else if (code == MODE_LOGOUT) {
+            this.message = message; // message를 message 사용
+        }
+    }
+
+    public Yacht(String userID, int code, String message, String passWord) {
+        this(userID, code, message, null, 0, passWord); // roomTitle과 passWord는 null로 초기화
+        if (code == MODE_TX_PASSWORD) {
+            this.roomTitle = message;
+            this.passWord = passWord; // message를 passWord로 사용
         }
     }
 

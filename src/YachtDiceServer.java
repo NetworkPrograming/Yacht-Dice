@@ -16,7 +16,7 @@ public class YachtDiceServer extends JFrame {
     // 방 목록을 저장할 Vector
     private Vector<JButton> roomButtons = new Vector<>();
 
-    private JPanel roomPanel; // 방 패널을 멤버 변수로 선언
+    private JPanel roomPanel;
     private JTextArea t_display;
 
     public YachtDiceServer(int port) {
@@ -25,7 +25,7 @@ public class YachtDiceServer extends JFrame {
 
         setMinimumSize(new Dimension(800, 700)); // 최소 크기 설정
         setSize(800, 700);
-        setLocation(500, 0);
+        setLocation(800, 0);
         setResizable(false); // 창 크기 조절 비활성화
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
@@ -66,7 +66,7 @@ public class YachtDiceServer extends JFrame {
 
 
         JScrollPane scrollPane = new JScrollPane(t_display);
-        scrollPane.setPreferredSize(new Dimension(300, 200)); // 스크롤 패널 크기 설정
+        scrollPane.setPreferredSize(new Dimension(450, 200)); // 스크롤 패널 크기 설정
 
 
         p.add(scrollPane, BorderLayout.CENTER);
@@ -223,8 +223,8 @@ public class YachtDiceServer extends JFrame {
         } else {
             roomButton = new JButton("<html><div style='text-align: center;'>" + roomTitle + "<br>비밀번호: " + password + "</div></html>");
         }
-        roomButton.setPreferredSize(new Dimension(180, 70)); // 버튼 가로 크기 설정
-        roomButton.setMaximumSize(new Dimension(300, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
+        roomButton.setPreferredSize(new Dimension(231, 70)); // 버튼 가로 크기 설정
+        roomButton.setMaximumSize(new Dimension(231, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
 
         roomButton.addActionListener(new ActionListener() {
             @Override
@@ -276,8 +276,7 @@ public class YachtDiceServer extends JFrame {
     }
 
     private void printDisplay(String msg) {
-        // 추후에 로그패널 만들고 거기에 표시되게 수정할것
-        System.out.println(msg);
+        //System.out.println(msg);
         t_display.append(msg + "\n");
         t_display.setCaretPosition(t_display.getDocument().getLength());
 
@@ -295,7 +294,7 @@ public class YachtDiceServer extends JFrame {
                 String cAddr = clientSocket.getInetAddress().getHostAddress();
 
                 ClientHandler cHandler = new ClientHandler(clientSocket);
-                users.add(cHandler);
+                //users.add(cHandler);
                 cHandler.start();
             }
         } catch (SocketException e) {
@@ -343,14 +342,66 @@ public class YachtDiceServer extends JFrame {
                 ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(cs.getInputStream()));
                 out = new ObjectOutputStream(new BufferedOutputStream(cs.getOutputStream()));
 
-                Yacht msg;
-                while ((msg = (Yacht) in.readObject()) != null) {
-                    if (msg.mode == Yacht.MODE_LOGIN) {
-                        uid = msg.userID;
 
-                        printDisplay(uid + " 입장. [ 현재 참가자 수 : " + users.size() + " ]\n\n\n");
-                        continue;
-                    } else if (msg.mode == Yacht.MODE_LOGOUT) {
+                Yacht msg;
+
+                msg = (Yacht) in.readObject(); // 첫 번째 메시지를 읽어서 로그인 요청을 받는다.
+                if (msg.mode == Yacht.MODE_LOGIN) {
+                    uid = msg.userID;
+
+                    // 중복 사용자 이름 체크
+                    boolean exists = false;
+                    for (ClientHandler user : users) {
+                        if (user.uid != null && user.uid.equals(uid)) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (exists) {
+                        // 중복된 UID인 경우 클라이언트에 메시지를 전송하고 연결 종료
+                        out.writeObject(new Yacht(uid, Yacht.MODE_LOGIN, "이미 사용중인 이름 입니다."));
+                        out.flush();
+                        cs.close();
+                        return;
+                    }
+
+                    // UID가 중복되지 않는 경우
+                    users.add(this); // 사용자 목록에 추가
+                    printDisplay(uid + " 입장. [ 현재 참가자 수 : " + users.size() + " ]");
+                    msg.message = uid + " 입장. [ 현재 참가자 수 : " + users.size() + " ]";
+                    broadcasting(msg);
+                }
+                while ((msg = (Yacht) in.readObject()) != null) {
+//                    if (msg.mode == Yacht.MODE_LOGIN) {
+//                        uid = msg.userID;
+//
+//                        // 중복 사용자 이름 체크
+//                        boolean exists = false;
+//                        for (ClientHandler user : users) {
+//                            if (user.uid != null && user.uid.equals(uid)) {
+//                                exists = true;
+//                                break;
+//                            }
+//                        }
+//                        if (exists) {
+//                            // 중복된 UID인 경우 클라이언트에 메시지를 전송하고 연결 종료
+//                            out.writeObject(new Yacht(uid, Yacht.MODE_LOGIN, "이미 사용중인 이름 입니다."));
+//                            out.flush();
+//                            cs.close(); // 클라이언트 소켓 종료
+//                            return; // 메서드 종료
+//                        }
+//
+//
+//                        printDisplay(uid + " 입장. [ 현재 참가자 수 : " + users.size() + " ]");
+//                        msg.message = uid + " 입장. [ 현재 참가자 수 : " + users.size() + " ]";
+//                        broadcasting(msg);
+//                        continue;
+//                    } else
+                    if (msg.mode == Yacht.MODE_LOGOUT) {
+                        uid = msg.userID;
+                        //printDisplay(uid + " 퇴장. [ 현재 참가자 수 : " + users.size() + " ]");
+                        msg.message = uid + " 퇴장. [ 현재 참가자 수 : " + (users.size() - 1) + " ]";
+                        broadcasting(msg);
                         break;
                     } else if (msg.mode == Yacht.MODE_TX_STRING) {
                         String message = uid + ": " + msg.message;
@@ -361,14 +412,20 @@ public class YachtDiceServer extends JFrame {
                         broadcasting(msg);
                         ///////////////////////
                     } else if (msg.mode == Yacht.MODE_TX_ROOMNAME) {
-                        String message = uid + "님이 \"" + msg.message + "\" 방을 생성하였습니다.";
+                        String message = uid + "님이 \"" + msg.message + "\" 일반 방을 생성하였습니다.";
                         printDisplay(message);
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_TX_PASSWORD) {
-                        String message = "생성된 방의 비밀번호는 \"" + msg.message + "\" 입니다.";
+                        String message = uid + "님이 \"" + msg.message + "\" 비밀 방을 생성하였습니다.\n";
+                        message += "생성된 방의 비밀번호는 \"" + msg.passWord + "\" 입니다.";
                         printDisplay(message);
                         broadcasting(msg);
                     }
+//                    else if (msg.mode == Yacht.MODE_GAME_TEXT) {
+//                        String message = "생성된 방의 비밀번호는 \"" + msg.message + "\" 입니다.";
+//                        printDisplay(message);
+//                        broadcasting(msg, roomTitle);
+//                    }
                     ///////////////////////
                 }
                 users.removeElement(this);
@@ -402,6 +459,12 @@ public class YachtDiceServer extends JFrame {
                 c.send(msg);
             }
         }
+
+//        private void broadcasting(Yacht msg, String roomname) {
+//            for (ClientHandler c : users) {
+//                c.send(msg);
+//            }
+//        }
 
         public void run() {
             receiveMessages(clientSocket);
