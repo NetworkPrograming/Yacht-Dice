@@ -371,7 +371,6 @@ public class YachtDiceClient extends JFrame {
         dialog.setVisible(true);
     }
 
-    // 텍스트 가운데 정렬
     private JLabel createCenteredLabel(String text) {
         JLabel label = new JLabel(text);
         label.setHorizontalAlignment(SwingConstants.CENTER); // 가운데 정렬
@@ -548,10 +547,26 @@ public class YachtDiceClient extends JFrame {
                             break;
                         case Yacht.MODE_TX_ROOMNAME:
                             //printDisplay(inMsg.userID + ": " + inMsg.roomTitle);
-                            printDisplay(inMsg.userID + "님이 일반 방에 접속하였습니다. (방 이름 : " + inMsg.roomTitle + ")");
+                            //printDisplay(inMsg.userID + "님이 일반 방에 접속하였습니다. (방 이름 : " + inMsg.roomTitle + ")");
+                            //createRoom(inMsg.roomTitle, inMsg.passWord);
+                            // repaint를 해야함 여기서
+
+                            ///////////////////////////////////////////////////////////////////////
+                            // for문을 돌면서 서버에 있던 방 목록 전체를 받아 돌면서 모두 출력해야할듯
+                            roomPanel.revalidate(); // 패널 갱신
+                            roomPanel.repaint(); // 패널 다시 그리기
+                            ///////////////////////////////////////////////////////////////////////
+                            // printDisplay(inMsg.passWord);  null임
                             break;
                         case Yacht.MODE_TX_PASSWORD:
-                            printDisplay(inMsg.userID + "님이 비밀 방에 접속하였습니다. (방 이름 : " + inMsg.roomTitle + ") (비밀번호 :" + inMsg.passWord + ")");
+                            //printDisplay(inMsg.userID + "님이 비밀 방에 접속하였습니다. (방 이름 : " + inMsg.roomTitle + ") (비밀번호 :" + inMsg.passWord + ")");
+                            //createRoom(inMsg.roomTitle, inMsg.passWord);
+
+                            ///////////////////////////////////////////////////////////////////////
+                            // for문을 돌면서 서버에 있던 방 목록 전체를 받아 돌면서 모두 출력해야할듯
+                            roomPanel.revalidate(); // 패널 갱신
+                            roomPanel.repaint(); // 패널 다시 그리기
+                            ///////////////////////////////////////////////////////////////////////
                             break;
                     }
                 } catch (IOException e) {
