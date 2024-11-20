@@ -7,8 +7,11 @@ public class Yacht implements Serializable {
     public final static int MODE_TX_STRING = 0x10;   // 0001 0000
     public final static int MODE_TX_FILE = 0x20;     // 0010 0000
     public final static int MODE_TX_IMAGE = 0x40;    // 0100 0000
-    public final static int MODE_TX_ROOMNAME = 0x80;  // 1000 0000
-    public final static int MODE_TX_PASSWORD = 0x100; // 0001 0000 0000
+    public final static int MODE_CREATE_NORMAL_ROOM = 0x80;  // 1000 0000
+    public final static int MODE_CREATE_SECRET_ROOM = 0x100; // 0001 0000 0000
+    public final static int MODE_ENTERROOM = 0x200; // 0010 0000 0000
+    public final static int MODE_REQUEST_ROOM_LIST = 0x800; // 0100 0000 0000
+    public final static int MODE_ROOM_LIST = 0x1600; // 0100 0000 0000
 
     String userID;
     int mode;
@@ -40,7 +43,7 @@ public class Yacht implements Serializable {
 
     public Yacht(String userID, int code, String message) {
         this(userID, code, message, null, 0, null); // roomTitle과 passWord는 null로 초기화
-        if (code == MODE_TX_ROOMNAME) {
+        if (code == MODE_CREATE_NORMAL_ROOM) {
             this.roomTitle = message; // message를 roomTitle로 사용
         }
         else if (code == MODE_LOGIN) {
@@ -49,11 +52,17 @@ public class Yacht implements Serializable {
         else if (code == MODE_LOGOUT) {
             this.message = message; // message를 message 사용
         }
+        else if (code == MODE_ENTERROOM) {
+            this.message = message; // message를 message 사용
+        }
+        else if (code == MODE_REQUEST_ROOM_LIST) {
+            this.message = ""; // message를 message 사용
+        }
     }
 
     public Yacht(String userID, int code, String message, String passWord) {
         this(userID, code, message, null, 0, passWord); // roomTitle과 passWord는 null로 초기화
-        if (code == MODE_TX_PASSWORD) {
+        if (code == MODE_CREATE_SECRET_ROOM) {
             this.roomTitle = message;
             this.passWord = passWord; // message를 passWord로 사용
         }
@@ -66,6 +75,4 @@ public class Yacht implements Serializable {
     public Yacht(String userID, int code, String filename, long size) {
         this(userID, code, filename, null, size, null, null);
     }
-
-
 }
