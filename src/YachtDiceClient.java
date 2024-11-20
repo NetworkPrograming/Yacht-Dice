@@ -50,8 +50,8 @@ public class YachtDiceClient extends JFrame {
         this.serverPort = serverPort;
         buildGUI();
 
-        setMinimumSize(new Dimension(800, 700)); // 최소 크기 설정
-        setSize(800, 700);
+        setMinimumSize(new Dimension(700, 700)); // 최소 크기 설정
+        setSize(700, 700);
         setLocation(0, 0);
         setResizable(false); // 창 크기 조절 비활성화
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -218,7 +218,7 @@ public class YachtDiceClient extends JFrame {
 
 
         JScrollPane scrollPane = new JScrollPane(t_display);
-        scrollPane.setPreferredSize(new Dimension(450, 200)); // 스크롤 패널 크기 설정
+        scrollPane.setPreferredSize(new Dimension(350, 200)); // 스크롤 패널 크기 설정
 
 
         p.add(scrollPane, BorderLayout.CENTER);
@@ -390,8 +390,8 @@ public class YachtDiceClient extends JFrame {
             roomButton = new JButton(roomTitle, scaledIcon);
         }
 
-        roomButton.setPreferredSize(new Dimension(231, 70)); // 버튼 가로 크기 설정
-        roomButton.setMaximumSize(new Dimension(231, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
+        roomButton.setPreferredSize(new Dimension(209, 70)); // 버튼 가로 크기 설정
+        roomButton.setMaximumSize(new Dimension(209, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
 
         roomButton.addActionListener(new ActionListener() {
             @Override

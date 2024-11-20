@@ -23,9 +23,9 @@ public class YachtDiceServer extends JFrame {
         super("Yacht Game Server");
         buildGUI();
 
-        setMinimumSize(new Dimension(800, 700)); // 최소 크기 설정
-        setSize(800, 700);
-        setLocation(800, 0);
+        setMinimumSize(new Dimension(700, 700)); // 최소 크기 설정
+        setSize(700, 700);
+        setLocation(700, 0);
         setResizable(false); // 창 크기 조절 비활성화
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
@@ -50,8 +50,8 @@ public class YachtDiceServer extends JFrame {
         } else {
             roomButton = new JButton("<html><div style='text-align: center;'>" + roomTitle + "<br>비밀번호: " + password + "</div></html>");
         }
-        roomButton.setPreferredSize(new Dimension(231, 70)); // 버튼 가로 크기 설정
-        roomButton.setMaximumSize(new Dimension(231, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
+        roomButton.setPreferredSize(new Dimension(233, 70)); // 버튼 가로 크기 설정
+        roomButton.setMaximumSize(new Dimension(233, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
 
         roomButtons.add(roomButton);
 
@@ -218,7 +218,7 @@ public class YachtDiceServer extends JFrame {
         mainPanel.add(leftPanel, BorderLayout.CENTER); // 왼쪽에 추가
 
         // 오른쪽 패널
-        JPanel rightPanel = (textPanel()); // 예시 패널 생성 메서드 호출
+        JPanel rightPanel = textPanel(); // 예시 패널 생성 메서드 호출
         mainPanel.add(rightPanel, BorderLayout.EAST); // 오른쪽에 추가
 
         add(mainPanel, BorderLayout.CENTER);
@@ -234,7 +234,7 @@ public class YachtDiceServer extends JFrame {
 
 
         JScrollPane scrollPane = new JScrollPane(t_display);
-        scrollPane.setPreferredSize(new Dimension(450, 200)); // 스크롤 패널 크기 설정
+        scrollPane.setPreferredSize(new Dimension(350, 200)); // 스크롤 패널 크기 설정
 
 
         p.add(scrollPane, BorderLayout.CENTER);
