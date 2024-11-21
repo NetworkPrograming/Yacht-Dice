@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.Objects;
+import java.util.Random;
 
 public class YachtDiceClient extends JFrame {
 
@@ -65,7 +66,7 @@ public class YachtDiceClient extends JFrame {
             boolean hasPassword = parts.length > 1 && parts[1].equals("1"); // 비밀번호 존재 여부 체크
 
             if (title == null || title.trim().isEmpty()) {
-                System.out.println("방 제목이 유효하지 않습니다."); // 예외 처리 또는 경고 출력
+                // 방 이름이 없을때 아무일도 일어나지 않아야함.
             } else {
                 //System.out.println(title);
                 ImageIcon secretRoomIcon = new ImageIcon(getClass().getResource("/resources/secret_room.png"));
@@ -101,7 +102,7 @@ public class YachtDiceClient extends JFrame {
 
     private void openRoomWindow(String roomTitle) {
         // 방 접속 후 바로 GameGUI 창을 띄운다
-        System.out.println(roomTitle+" 방에 접속");
+        System.out.println(roomTitle + " 방에 접속");
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -262,13 +263,26 @@ public class YachtDiceClient extends JFrame {
                 roomTitle = roomTitleField.getText();
                 password = secretRoomCheckBox.isSelected() ? new String(passwordField.getPassword()) : null;
 
+                if (check_space(roomTitle)) {
+                    JOptionPane.showMessageDialog(YachtDiceClient.this, "방 이름은 공백을 포함할 수 없습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (password != null) {
+                    if (check_space(password)) {
+                        JOptionPane.showMessageDialog(YachtDiceClient.this, "비밀번호는 공백을 포함할 수 없습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                }
+
                 if (roomTitle.isEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "방 이름을 입력하세요.", "방 이름 확인", JOptionPane.WARNING_MESSAGE);
+                    roomTitleField.setText("");
                     return; // 방 이름이 없다면 방 생성하지 않음
                 }
                 // 비밀번호가 필요한 비밀방일 경우 체크
                 if (secretRoomCheckBox.isSelected() && (password.isEmpty())) {
                     JOptionPane.showMessageDialog(dialog, "비밀번호를 입력하세요.", "비밀번호 확인", JOptionPane.WARNING_MESSAGE);
+                    passwordField.setText("");
                     return; // 비밀번호가 없다면 방 생성하지 않음
                 }
 
@@ -346,6 +360,16 @@ public class YachtDiceClient extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
     }
 
+    private boolean check_space(String text) {
+        boolean hasLeadingSpaces = false;
+        for (char ch : text.toCharArray()) {
+            if (ch == ' ') {
+                hasLeadingSpaces = true; // 공백 발견
+            }
+        }
+        return hasLeadingSpaces;
+    }
+
     private JPanel createControlPanel() {
         JPanel p = new JPanel(new GridLayout(0, 3));
 
@@ -354,8 +378,25 @@ public class YachtDiceClient extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    connectToServer();
-                    sendUserID();
+                    String text = t_userID.getText();
+                    if (check_space(text)) {
+                        JOptionPane.showMessageDialog(YachtDiceClient.this, "공백을 포함할 수 없습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                    } else if (text.isEmpty()) {
+                        JOptionPane.showMessageDialog(YachtDiceClient.this, "아이디를 입력해주세요.", "경고", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        connectToServer();
+                        sendUserID();
+
+                        b_connect.setEnabled(false);
+                        b_disconnect.setEnabled(true);
+                        b_exit.setEnabled(false);
+
+                        t_userID.setEditable(false);
+                        t_input.setEnabled(true);
+                        b_send.setEnabled(true);
+
+                        b_createRoom.setEnabled(true);
+                    }
                 } catch (UnknownHostException e1) {
                     printDisplay("서버 주소와 포트번호를 확인하세요 : " + e1.getMessage());
                     return;
@@ -363,16 +404,6 @@ public class YachtDiceClient extends JFrame {
                     printDisplay("서버와의 연결 오류 : " + e1.getMessage());
                     return;
                 }
-
-                b_connect.setEnabled(false);
-                b_disconnect.setEnabled(true);
-                b_exit.setEnabled(false);
-
-                t_userID.setEditable(false);
-                t_input.setEnabled(true);
-                b_send.setEnabled(true);
-
-                b_createRoom.setEnabled(true);
             }
         });
 
@@ -518,7 +549,9 @@ public class YachtDiceClient extends JFrame {
 
         t_userID = new JTextField(12);
 
-        t_userID.setText("guest" + getLocalAddr().split("\\.")[3]);
+        //t_userID.setText("guest" + getLocalAddr().split("\\.")[3]);
+        Random random = new Random();
+        t_userID.setText("도전자" + (random.nextInt(100) + 1));
         t_userID.setHorizontalAlignment(JTextField.CENTER);
 
         p.add(new JLabel("아이디:"));
@@ -589,9 +622,14 @@ public class YachtDiceClient extends JFrame {
     }
 
     private void sendMessage() {
-        String message = t_input.getText();
-        send(new Yacht(uid, Yacht.MODE_TX_STRING, message));
-        t_input.setText("");
+        String message = t_input.getText().trim();
+        if (message.isEmpty()) {
+            JOptionPane.showMessageDialog(YachtDiceClient.this, "공백으로 이루어진 채팅을 칠 수 없습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+            t_input.setText("");
+        } else {
+            send(new Yacht(uid, Yacht.MODE_TX_STRING, message));
+            t_input.setText("");
+        }
     }
 
     private void sendUserID() {
