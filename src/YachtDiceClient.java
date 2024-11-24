@@ -28,7 +28,7 @@ public class YachtDiceClient extends JFrame {
 
     private Thread receiveThread = null;
 
-    private JPanel roomPanel; // 방 패널을 멤버 변수로 선언
+    private JPanel roomPanel;
 
     String roomTitle;
     String password;
@@ -143,7 +143,7 @@ public class YachtDiceClient extends JFrame {
                         case Yacht.MODE_LOGIN:
                             if (inMsg.message.equals("이미 사용중인 이름 입니다.")) {
                                 JOptionPane.showMessageDialog(YachtDiceClient.this, inMsg.message, "경고", JOptionPane.WARNING_MESSAGE);
-                                disconnect(); // 연결 종료
+                                disconnect();
                             } else {
                                 printDisplay(inMsg.message);
                                 requestRoomList();
@@ -338,7 +338,6 @@ public class YachtDiceClient extends JFrame {
     }
 
     private void buildGUI() {
-
         // 상위 패널 생성
         JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -361,13 +360,13 @@ public class YachtDiceClient extends JFrame {
     }
 
     private boolean check_space(String text) {
-        boolean hasLeadingSpaces = false;
         for (char ch : text.toCharArray()) {
             if (ch == ' ') {
-                hasLeadingSpaces = true; // 공백 발견
+                // 공백 발견
+                return true;
             }
         }
-        return hasLeadingSpaces;
+        return false;
     }
 
     private JPanel createControlPanel() {
@@ -476,8 +475,6 @@ public class YachtDiceClient extends JFrame {
         JPanel p = new JPanel(new BorderLayout());
 
         t_display = new JTextArea();
-        t_display.setLineWrap(true); // 줄 바꿈 설정
-        t_display.setWrapStyleWord(true); // 단어 단위로 줄 바꿈
         t_display.setEditable(false);
 
 
@@ -507,7 +504,7 @@ public class YachtDiceClient extends JFrame {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.add(b_createRoom);
-        buttonPanel.add(Box.createVerticalStrut(50)); // 버튼 아래에 10픽셀 여백 추가
+        buttonPanel.add(Box.createVerticalStrut(50)); // 버튼 아래에 50픽셀 여백 추가
 
         // 버튼 패널을 상단에 추가
         p.add(buttonPanel, BorderLayout.NORTH);
@@ -527,7 +524,7 @@ public class YachtDiceClient extends JFrame {
 
         // 방 목록이 표시되는 패널
         roomPanel = new JPanel();
-        roomPanel.setLayout(new BoxLayout(roomPanel, BoxLayout.Y_AXIS)); // BoxLayout으로 설정
+        roomPanel.setLayout(new BoxLayout(roomPanel, BoxLayout.Y_AXIS));
 
         // 방 목록에 스크롤 가능한 패널 추가
         JScrollPane roomScrollPane = new JScrollPane(roomPanel);

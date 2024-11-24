@@ -58,7 +58,7 @@ public class YachtDiceServer extends JFrame {
 
                 Yacht msg;
 
-                msg = (Yacht) in.readObject(); // 첫 번째 메시지를 읽어서 로그인 요청을 받는다.
+                msg = (Yacht) in.readObject();
                 if (msg.mode == Yacht.MODE_LOGIN) {
                     uid = msg.userID;
 
@@ -116,7 +116,7 @@ public class YachtDiceServer extends JFrame {
                             // 방 생성
                             Room newRoom = new Room(msg.roomTitle, msg.passWord, 4); // 최대 4명
                             rooms.add(newRoom);
-                            newRoom.addParticipant(uid); // 참가자 추가
+                            newRoom.addPeople(uid); // 참가자 추가
                             String message = uid + "님이 \"" + msg.message + "\" 일반 방을 생성하였습니다.";
 
                             createRoom(msg.roomTitle, msg.passWord);
@@ -143,7 +143,7 @@ public class YachtDiceServer extends JFrame {
                             // 방 생성
                             Room newRoom = new Room(msg.roomTitle, msg.passWord, 4); // 최대 4명
                             rooms.add(newRoom);
-                            newRoom.addParticipant(uid); // 참가자 추가
+                            newRoom.addPeople(uid); // 참가자 추가
                             String message = uid + "님이 \"" + msg.message + "\" 비밀 방을 생성하였습니다.\n";
                             message += "생성된 방의 비밀번호는 \"" + msg.passWord + "\" 입니다.";
 
@@ -156,7 +156,7 @@ public class YachtDiceServer extends JFrame {
                         }
                     } else if (msg.mode == Yacht.MODE_ENTERROOM) {
                         // 방을 들어가고싶으면 방의 인원 수를 먼저 확인 후에 비밀방 일반방을 구분하고 입장하기
-
+                        //
                         String message = uid + "님이 \"" + msg.message + "\" 방에 입장하였습니다.\n";
                         message += "방의 인원은 \"" + 4 + "명\" 입니다.";
                         printDisplay(message);
@@ -184,7 +184,8 @@ public class YachtDiceServer extends JFrame {
             StringBuilder roomList = new StringBuilder();
             for (Room room : rooms) {
                 // 방 제목과 비밀번호 존재 여부를 체크하여 문자열 생성
-                roomList.append(room.getTitle()).append(room.getPassword() != null ? ":1" : ":0").append(","); // ":1"은 비밀번호 존재, ":0"은 비밀번호 없음
+                roomList.append(room.getTitle()).append(room.getPassword() != null ? ":1" : ":0").append(",");
+                // ":1"은 비밀번호 존재, ":0"은 비밀번호 없음
             }
             // 마지막 쉼표 제거
             if (roomList.length() > 0) {
@@ -240,11 +241,11 @@ public class YachtDiceServer extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // 왼쪽 패널
-        JPanel leftPanel = createDisplayPanel(); // 기존의 createDisplayPanel 호출
+        JPanel leftPanel = createDisplayPanel();
         mainPanel.add(leftPanel, BorderLayout.CENTER); // 왼쪽에 추가
 
         // 오른쪽 패널
-        JPanel rightPanel = textPanel(); // 예시 패널 생성 메서드 호출
+        JPanel rightPanel = textPanel();
         mainPanel.add(rightPanel, BorderLayout.EAST); // 오른쪽에 추가
 
         add(mainPanel, BorderLayout.CENTER);
@@ -254,14 +255,10 @@ public class YachtDiceServer extends JFrame {
         JPanel p = new JPanel(new BorderLayout());
 
         t_display = new JTextArea();
-        t_display.setLineWrap(true); // 줄 바꿈 설정
-        t_display.setWrapStyleWord(true); // 단어 단위로 줄 바꿈
         t_display.setEditable(false);
-
 
         JScrollPane scrollPane = new JScrollPane(t_display);
         scrollPane.setPreferredSize(new Dimension(350, 200)); // 스크롤 패널 크기 설정
-
 
         p.add(scrollPane, BorderLayout.CENTER);
 
@@ -294,7 +291,7 @@ public class YachtDiceServer extends JFrame {
 
         // 방 목록이 표시되는 패널
         roomPanel = new JPanel();
-        roomPanel.setLayout(new BoxLayout(roomPanel, BoxLayout.Y_AXIS)); // BoxLayout으로 설정
+        roomPanel.setLayout(new BoxLayout(roomPanel, BoxLayout.Y_AXIS));
 
         // 방 목록에 스크롤 가능한 패널 추가
         JScrollPane roomScrollPane = new JScrollPane(roomPanel);
@@ -326,7 +323,8 @@ public class YachtDiceServer extends JFrame {
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(port);
-            printDisplay("서버가 시작되었습니다. " + getLocalAddr());
+            printDisplay("서버가 시작되었습니다.");
+            //printDisplay("서버가 시작되었습니다. " + getLocalAddr());
 
             while (acceptThread == Thread.currentThread()) {
                 clientSocket = serverSocket.accept();

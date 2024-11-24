@@ -23,7 +23,6 @@ public class GameGUI extends JFrame {
         this.in = in;
         this.out = out;
 
-        // 레이아웃을 BorderLayout으로 설정
         //setDefaultCloseOperation(EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(1600, 770));
         pack();
@@ -68,11 +67,10 @@ public class GameGUI extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                // 배경 이미지를 그리기
                 g.drawImage(backgroundImage, 330, 0, 1200, 750, this);
             }
         };
-        panel.setLayout(null); // null 레이아웃 사용
+        panel.setLayout(null);
 
         return panel;
     }
@@ -82,16 +80,15 @@ public class GameGUI extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                // 점수판 이미지를 그리기
                 g.drawImage(scoreBoard, 0, 0, 360, 750, this);
             }
         };
-        panel.setLayout(null); // null 레이아웃 사용
+        panel.setLayout(null);
         return panel;
     }
 
    /* private JPanel ControlPanel() { // 아래 컨트롤(항복버튼, 굴리기 버튼)
-        JPanel p = new JPanel(null); // null 레이아웃 사용
+        JPanel p = new JPanel(null);
         p.setBounds(450, 450, 450, 270); // 위치와 크기 지정
 
         rollButton.setBounds(0, 0, 225, 270);
@@ -115,12 +112,10 @@ public class GameGUI extends JFrame {
         //panel.setOpaque(false); // 패널을 투명하게 설정
         panel.setLayout(null);
         // JTextArea 추가하여 메시지 표시
-        textArea.setEditable(false); // 사용자가 입력할 수 없도록 설정
-        textArea.setBounds(10, 10, 300, 650); // 위치와 크기 설정
-        textArea.setLineWrap(true); // 자동 줄바꿈
-        textArea.setWrapStyleWord(true); // 단어 단위로 줄바꿈
+        textArea.setEditable(false);
+        textArea.setBounds(10, 10, 300, 650);
         textArea.setFont(new Font("Arial", Font.PLAIN, 14)); // 폰트 설정
-        panel.add(textArea); // 텍스트 영역을 패널에 추가
+        panel.add(textArea);
 
         // 메시지 입력 필드
         chatInput = new JTextField();
@@ -131,9 +126,8 @@ public class GameGUI extends JFrame {
         sendButton = new JButton("Send");
         sendButton.setBounds(260,700,50,40);
         panel.add(sendButton);
-
-
-        // Enter 키와 버튼 클릭으로 메시지 전송
+        
+        // 엔터와 버튼 클릭으로 메시지 전송
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -161,10 +155,9 @@ public class GameGUI extends JFrame {
         String message = chatInput.getText();
         if (message != null && !message.isEmpty()) {
             try {
-                // 메시지를 서버로 전송
                 out.writeObject(message + "\n");
                 out.flush();
-                chatInput.setText("");  // 입력 필드 비우기
+                chatInput.setText("");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -175,7 +168,6 @@ public class GameGUI extends JFrame {
         try {
             String message;
             while ((message = in.readLine()) != null) {
-                // 서버로부터 받은 메시지를 JTextArea에 추가
                 textArea.append(message + "\n");
             }
         } catch (IOException e) {
@@ -191,19 +183,19 @@ public class GameGUI extends JFrame {
         jPanel.setLayout(null);
 
         // 주사위 그리기
-        JButton diceOneImg = createDiceButton("resources/dice1.png", 200, 200); // 1번 다이스
+        JButton diceOneImg = createDiceButton("resources/dice1.png", 200, 200); // 1번 주사위
         jPanel.add(diceOneImg);
 
-        JButton diceTwoImg = createDiceButton("resources/dice2.png", 295, 200); // 2번 다이스
+        JButton diceTwoImg = createDiceButton("resources/dice2.png", 295, 200); // 2번 주사위
         jPanel.add(diceTwoImg);
 
-        JButton diceThreeImg = createDiceButton("resources/dice3.png", 385, 200); // 3번 다이스
+        JButton diceThreeImg = createDiceButton("resources/dice3.png", 385, 200); // 3번 주사위
         jPanel.add(diceThreeImg);
 
-        JButton diceFourImg = createDiceButton("resources/dice4.png", 475, 200); // 4번 다이스
+        JButton diceFourImg = createDiceButton("resources/dice4.png", 475, 200); // 4번 주사위
         jPanel.add(diceFourImg);
 
-        JButton diceFiveImg = createDiceButton("resources/dice5.png", 565, 200); // 5번 다이스
+        JButton diceFiveImg = createDiceButton("resources/dice5.png", 565, 200); // 5번 주사위
         jPanel.add(diceFiveImg);
 
         // 굴리기 버튼

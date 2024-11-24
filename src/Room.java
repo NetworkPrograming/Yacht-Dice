@@ -4,14 +4,14 @@ import java.util.List;
 public class Room {
     private String title;
     private String password;
-    private List<String> participants; // 참가자 목록
-    private int maxParticipants; // 최대 참가자 수
+    private List<String> people; // 참가자 목록
+    private int maxPeople; // 최대 참가자 수
 
-    public Room(String title, String password, int maxParticipants) {
+    public Room(String title, String password, int maxPeople) {
         this.title = title;
         this.password = password;
-        this.maxParticipants = maxParticipants;
-        this.participants = new ArrayList<>();
+        this.maxPeople = maxPeople;
+        this.people = new ArrayList<>();
     }
 
     public String getTitle() {
@@ -22,23 +22,23 @@ public class Room {
         return password;
     }
 
-    public List<String> getParticipants() {
-        return participants;
+    public List<String> getPeople() {
+        return people;
     }
 
-    public int getMaxParticipants() {
-        return maxParticipants;
+    public int getMaxPeople() {
+        return maxPeople;
     }
 
-    public boolean addParticipant(String userID) {
-        if (participants.size() < maxParticipants) {
-            participants.add(userID);
+    public boolean addPeople(String userID) {
+        if (people.size() < maxPeople) {
+            people.add(userID);
             return true;
         }
-        return false; // 최대 인원 초과
+        return false; // 최대 인원 초과시
     }
 
-    public void removeParticipant(String userID) {
-        participants.remove(userID);
+    public void removePeople(String userID) {
+        people.remove(userID);
     }
 }
