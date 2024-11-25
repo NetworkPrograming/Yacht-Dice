@@ -13,8 +13,8 @@ public class GameGUI extends JFrame {
     JButton giveUpButton = new JButton("Give Up");
     JTextArea textArea = new JTextArea(10, 20);
     private JTextArea chatDisplay; // 채팅 메시지 표시 영역
-    private JTextField chatInput;  // 메시지 입력 필드
-    private JButton sendButton;    // 메시지 보내기 버튼
+    private JTextField t_input;  // 메시지 입력 필드
+    private JButton b_send;    // 메시지 보내기 버튼
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
@@ -87,25 +87,6 @@ public class GameGUI extends JFrame {
         return panel;
     }
 
-   /* private JPanel ControlPanel() { // 아래 컨트롤(항복버튼, 굴리기 버튼)
-        JPanel p = new JPanel(null);
-        p.setBounds(450, 450, 450, 270); // 위치와 크기 지정
-
-        rollButton.setBounds(0, 0, 225, 270);
-        p.add(rollButton);
-
-        giveUpButton.setBounds(225, 0, 225, 270);
-        p.add(giveUpButton);
-
-        rollButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                game.rollDice();
-                displayDice();
-            }
-        });
-        return p;
-    } */
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
@@ -118,31 +99,31 @@ public class GameGUI extends JFrame {
         panel.add(textArea);
 
         // 메시지 입력 필드
-        chatInput = new JTextField();
-        chatInput.setBounds(10,700,250,40);
-        panel.add(chatInput);
+        t_input = new JTextField();
+        t_input.setBounds(10,700,250,40);
+        panel.add(t_input);
 
         // 메시지 보내기 버튼
-        sendButton = new JButton("Send");
-        sendButton.setBounds(260,700,50,40);
-        panel.add(sendButton);
+        b_send = new JButton("Send");
+        b_send.setBounds(260,700,50,40);
+        panel.add(b_send);
         
         // 엔터와 버튼 클릭으로 메시지 전송
-        sendButton.addActionListener(new ActionListener() {
+        b_send.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String message = chatInput.getText();
+                String message = t_input.getText();
                 textArea.append(message + "\n");
-                chatInput.setText("");
+                t_input.setText("");
             }
         });
 
-        chatInput.addActionListener(new ActionListener() {
+        t_input.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String message = chatInput.getText();
+                String message = t_input.getText();
                 textArea.append(message + "\n");
-                chatInput.setText("");
+                t_input.setText("");
             }
         });
 
@@ -152,12 +133,12 @@ public class GameGUI extends JFrame {
     }
 
     private void sendMessageToServer() {
-        String message = chatInput.getText();
+        String message = t_input.getText();
         if (message != null && !message.isEmpty()) {
             try {
                 out.writeObject(message + "\n");
                 out.flush();
-                chatInput.setText("");
+                t_input.setText("");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -200,12 +181,12 @@ public class GameGUI extends JFrame {
 
         // 굴리기 버튼
         Random rand = new Random();
-        JButton rollButton = new JButton("Roll!");
-        rollButton.setBounds(360, 300, 100, 100);
-        rollButton.addActionListener(new ActionListener() {
+        JButton b_roll = new JButton("Roll!");
+        b_roll.setBounds(360, 300, 100, 100);
+        b_roll.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                rollButton.setEnabled(false);
+                b_roll.setEnabled(false);
 
                 playSound("/resources/dice_roll.wav");
 
@@ -250,7 +231,7 @@ public class GameGUI extends JFrame {
                                 endTime = System.currentTimeMillis();
                             }
 
-                            rollButton.setEnabled(true);
+                            b_roll.setEnabled(true);
                         } catch (InterruptedException e) {
                             System.out.println("Threading Error: " + e);
                         }
@@ -259,38 +240,38 @@ public class GameGUI extends JFrame {
                 rollThread.start();
             }
         });
-        jPanel.add(rollButton);
+        jPanel.add(b_roll);
 
         return jPanel;
     }
 
     private JButton createDiceButton(String imagePath, int x, int y) {
-        JButton diceButton = ImgService.loadImage(imagePath);
-        diceButton.setBounds(x, y, 75, 75);
+        JButton b_dice = ImgService.loadImage(imagePath);
+        b_dice.setBounds(x, y, 75, 75);
 
         // "isMoved" 상태를 버튼에 저장 (기본값은 false)
-        diceButton.putClientProperty("isMoved", false);
+        b_dice.putClientProperty("isMoved", false);
 
         // 클릭 시 특정 위치로 이동하도록 이벤트 추가
-        diceButton.addActionListener(new ActionListener() {
+        b_dice.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boolean isMoved = (boolean) diceButton.getClientProperty("isMoved");
+                boolean isMoved = (boolean) b_dice.getClientProperty("isMoved");
 
                 if (!isMoved) {
                     // 이동
-                    diceButton.setLocation(x, y - 130); // 예시: 아래쪽으로 130px 이동
-                    diceButton.putClientProperty("isMoved", true);  // 이동 상태 업데이트
+                    b_dice.setLocation(x, y - 130); // 예시: 아래쪽으로 130px 이동
+                    b_dice.putClientProperty("isMoved", true);  // 이동 상태 업데이트
                 } else {
                     // 원래 위치로 돌아감
-                    diceButton.setLocation(x, y);
-                    diceButton.putClientProperty("isMoved", false); // 이동 상태 업데이트
+                    b_dice.setLocation(x, y);
+                    b_dice.putClientProperty("isMoved", false); // 이동 상태 업데이트
                 }
                 repaint();
             }
         });
 
-        return diceButton;
+        return b_dice;
     }
 
     private void playSound(String soundFile) {
