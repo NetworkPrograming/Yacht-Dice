@@ -253,7 +253,7 @@ public class YachtDiceClient extends JFrame {
                         case Yacht.MODE_ENTER_ROOM:
                             if (Objects.equals(inMsg.userID, t_userID.getText())) {
                                 System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
-                                //openRoomWindow(roomTitle_copy);
+                                openRoomWindow(roomTitle_copy);
                             }
                             break;
                     }
