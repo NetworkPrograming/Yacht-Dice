@@ -92,8 +92,9 @@ public class YachtDiceServer extends JFrame {
                         broadcasting(msg);
                         break;
                     } else if (msg.mode == Yacht.MODE_TX_STRING) {
-                        String message = uid + ": " + msg.message;
+                        String message = uid + "님의 채팅: " + msg.message;
                         printDisplay(message);
+                        message = uid + ": " + msg.message;
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_TX_IMAGE) {
                         printDisplay(uid + ": " + msg.message);
@@ -116,7 +117,7 @@ public class YachtDiceServer extends JFrame {
                             // 방 생성
                             Room newRoom = new Room(msg.roomTitle, msg.passWord, 4); // 최대 4명
                             rooms.add(newRoom);
-                            newRoom.addPeople(uid); // 참가자 추가
+                            //newRoom.addPeople(uid); // 참가자 추가
                             String message = uid + "님이 \"" + msg.message + "\" 일반 방을 생성하였습니다.";
 
                             createRoom(msg.roomTitle, msg.passWord);
@@ -143,7 +144,7 @@ public class YachtDiceServer extends JFrame {
                             // 방 생성
                             Room newRoom = new Room(msg.roomTitle, msg.passWord, 4); // 최대 4명
                             rooms.add(newRoom);
-                            newRoom.addPeople(uid); // 참가자 추가
+                            //newRoom.addPeople(uid); // 참가자 추가
                             String message = uid + "님이 \"" + msg.message + "\" 비밀 방을 생성하였습니다.\n";
                             message += "생성된 방의 비밀번호는 \"" + msg.passWord + "\" 입니다.";
 
@@ -154,13 +155,59 @@ public class YachtDiceServer extends JFrame {
 
                             sendRoomListToClients();
                         }
-                    } else if (msg.mode == Yacht.MODE_ENTERROOM) {
+                    } else if (msg.mode == Yacht.MODE_ENTER_ROOM) {
                         // 방을 들어가고싶으면 방의 인원 수를 먼저 확인 후에 비밀방 일반방을 구분하고 입장하기
-                        //
-                        String message = uid + "님이 \"" + msg.message + "\" 방에 입장하였습니다.\n";
-                        message += "방의 인원은 \"" + 4 + "명\" 입니다.";
-                        printDisplay(message);
-                        broadcasting(msg);
+
+                        Room targetRoom = null;
+                        for (Room room : rooms) {
+                            //System.out.println(msg.message);
+                            //System.out.println(msg.passWord);
+                            if (room.getTitle().equals(msg.message)) {
+                                targetRoom = room;
+                                break;
+                            }
+                        }
+
+                        if (targetRoom != null) {
+                            // 방의 현재 참가자 수 확인
+                            int currentPeopleCount = targetRoom.getPeople().size();
+                            if (currentPeopleCount < targetRoom.getMaxPeople()) {
+                                // 방에 참가 가능
+                                targetRoom.addPeople(uid); // 참가자 추가
+//                                String message = uid + "님이 \"" + msg.message + "\" 방에 입장하였습니다.\n";
+//                                message += "현재 방의 인원 수는 \"" + (currentPeopleCount + 1) + "명\" 입니다.";
+//                                printDisplay(message);
+                                List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
+
+                                printDisplay(targetRoom.getTitle() + " 방에 " + uid + "님이 참가하였습니다.");
+                                printDisplay(targetRoom.getTitle() + " 방의 참가자 목록 :");
+                                if (people.isEmpty()) {
+                                    printDisplay("현재 참가자가 없습니다.");
+                                } else {
+                                    for (String userID : people) {
+                                        printDisplay("- " + userID);
+                                    }
+                                    printDisplay("");
+                                }
+                                broadcasting(msg);
+                            } else {
+                                // 방이 가득 찼을 경우
+                                String message = targetRoom.getTitle() + " 방이 가득 차서 입장할 수 없습니다.";
+                                printDisplay(message);
+                                //msg.message = message;
+                                send(msg); // 현재 클라이언트에게만 전송
+                            }
+                        } else {
+                            // 방이 존재하지 않는 경우
+                            String message = "존재하지 않는 방입니다.";
+                            printDisplay(message);
+                            msg.message = message;
+                            send(msg); // 현재 클라이언트에게만 전송
+                        }
+//                        String message = uid + "님이 \"" + msg.message + "\" 방에 입장하였습니다.\n";
+//                        message += "방의 인원은 \"" + "(테스트 4)" + "명\" 입니다.";
+//                        printDisplay(message);
+//                        broadcasting(msg);
                     }
                 }
                 users.removeElement(this);
@@ -184,8 +231,8 @@ public class YachtDiceServer extends JFrame {
             StringBuilder roomList = new StringBuilder();
             for (Room room : rooms) {
                 // 방 제목과 비밀번호 존재 여부를 체크하여 문자열 생성
-                roomList.append(room.getTitle()).append(room.getPassword() != null ? ":1" : ":0").append(",");
-                // ":1"은 비밀번호 존재, ":0"은 비밀번호 없음
+                roomList.append(room.getTitle()).append(room.getPassword() != null ? ":"+room.getPassword() : ":0").append(",");
+                // ":0"은 비밀번호 없음
             }
             // 마지막 쉼표 제거
             if (roomList.length() > 0) {

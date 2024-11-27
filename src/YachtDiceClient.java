@@ -37,6 +37,8 @@ public class YachtDiceClient extends JFrame {
     private JTextField t_input;
     private JButton b_send;
 
+    String roomTitle_copy;
+
     public YachtDiceClient(String serverAddress, int serverPort) {
         super("Yacht Game Client");
         this.serverAddress = serverAddress;
@@ -63,8 +65,8 @@ public class YachtDiceClient extends JFrame {
         for (String entry : roomEntries) {
             String[] parts = entry.split(":"); // 방 제목과 비밀번호 존재 여부를 ":"로 분리
             String title = parts[0]; // 방 제목
-            boolean hasPassword = parts.length > 1 && parts[1].equals("1"); // 비밀번호 존재 여부 체크
-
+            boolean hasPassword = parts.length > 1 && !parts[1].equals("0"); // 비밀번호 존재 여부 체크
+            String password_temp = "d";
             if (title == null || title.trim().isEmpty()) {
                 // 방 이름이 없을때 아무일도 일어나지 않아야함.
             } else {
@@ -75,20 +77,29 @@ public class YachtDiceClient extends JFrame {
 
                 JButton roomButton;
                 if (hasPassword) {
+                    password_temp = parts[1];
                     roomButton = new JButton(title, scaledIcon);
+                    //printDisplay(title + "?");
                 } else {
+                    password_temp = null;
                     roomButton = new JButton(title);
+                    //printDisplay(title + "!");
                 }
 
                 roomButton.setPreferredSize(new Dimension(209, 70)); // 버튼 가로 크기 설정
                 roomButton.setMaximumSize(new Dimension(209, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
 
+                String finalPassword_temp = password_temp;
+                String finaltitle_temp = title;
+                //System.out.println("방 이름" + title);
                 roomButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         // 접속할 수 있는 환경을 추가
-
-                        openRoomWindow(title);
+                        //System.out.println("방 이름" + title);
+                        //System.out.println("방 이름" + finaltitle_temp);
+                        enterRoom(t_userID.getText(), finaltitle_temp, 1, finalPassword_temp);
+                        roomTitle_copy = finaltitle_temp;
                     }
                 });
                 roomPanel.add(roomButton); // 방 버튼 추가
@@ -100,15 +111,62 @@ public class YachtDiceClient extends JFrame {
         roomPanel.repaint(); // 화면 다시 그리기
     }
 
+    private void enterRoom(String userIDID, String roomTitle, int flag, String password) {
+        //System.out.println("????" + roomTitle + "????");
+        System.out.println(userIDID + "????");
+        String roomtitle_temp;
+/// //////////////////////////////////////////////////////////////////////// /////////////////////////////////////////////////////////////////////
+        if (password != null) {
+            String inputPassword = null;
+
+            while (true) {
+                if (flag == 1) {
+                    inputPassword = JOptionPane.showInputDialog(this, "비밀번호를 입력하세요:", "비밀번호 확인", JOptionPane.PLAIN_MESSAGE);
+
+                    // 비밀번호 입력창에서 취소 버튼을 눌렀을 경우
+                    if (inputPassword == null) {
+                        return;
+                    }
+
+                    // 비밀번호가 틀린 경우
+                    if (!inputPassword.equals(password)) {
+                        JOptionPane.showMessageDialog(this, "비밀번호가 틀렸습니다. 다시 입력하세요.", "비밀번호 확인", JOptionPane.WARNING_MESSAGE);
+                        continue; // 다시 입력 요청
+                    }
+
+                    // 비밀번호가 맞는 경우
+                    //printDisplay(roomTitle + " 비밀 방에 접속했습니다. 비밀번호 : " + password);
+                    roomtitle_temp = roomTitle;
+                    //System.out.println(roomtitle_temp + 1);
+                    send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomtitle_temp));
+                    break;
+                } else if (flag == 0) {
+                    //printDisplay(roomTitle + " 비밀 방에 접속했습니다. 비밀번호 : " + password);
+                    roomtitle_temp = roomTitle;
+                    //System.out.println(roomtitle_temp + 2);
+                    send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomtitle_temp));
+                    break;
+                }
+            }
+        } else {
+            // 비밀번호가 필요 없는 경우
+            //printDisplay(roomTitle + "일반 방에 접속했습니다.");
+            roomtitle_temp = roomTitle;
+            //System.out.println(roomtitle_temp + 3);
+            send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomtitle_temp));
+        }
+/// //////////////////////////////////////////////////////////////////////// /////////////////////////////////////////////////////////////////////
+    }
+
     private void openRoomWindow(String roomTitle) {
         // 방 접속 후 바로 GameGUI 창을 띄운다
-        System.out.println(roomTitle + " 방에 접속");
+        //System.out.println(roomTitle + " 방에 접속");
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 GameGUI gameGUI = new GameGUI(in, out);
                 gameGUI.setVisible(true);  // GameGUI 창 보이기
-                //setVisible(false);
+                setVisible(false);
             }
         });  // GameGUI 창 바로 실행
     }
@@ -146,7 +204,7 @@ public class YachtDiceClient extends JFrame {
                                 disconnect();
                             } else {
                                 printDisplay(inMsg.message);
-                                requestRoomList();
+                                //requestRoomList();
                             }
                             break;
                         case Yacht.MODE_LOGOUT:
@@ -157,7 +215,6 @@ public class YachtDiceClient extends JFrame {
                             //printDisplay(inMsg.image);
                             break;
                         case Yacht.MODE_CREATE_NORMAL_ROOM:
-                            //여기 고쳐야함
                             if (inMsg.message.equals("일반 방이 이미 존재합니다.")) {
                                 if (Objects.equals(inMsg.userID, t_userID.getText())) {
                                     JOptionPane.showMessageDialog(YachtDiceClient.this, inMsg.message, "경고", JOptionPane.WARNING_MESSAGE);
@@ -165,11 +222,14 @@ public class YachtDiceClient extends JFrame {
                                 break;
                             } else {
                                 // 존재하는 모든 방 다시 출력
-                                requestRoomList();
+                                //requestRoomList();
+                                if (Objects.equals(inMsg.userID, t_userID.getText())) {
+                                    enterRoom(t_userID.getText(), inMsg.roomTitle, 0, inMsg.passWord);
+                                }
+                                //enterRoom(t_userID.getText(), inMsg.roomTitle, 0, inMsg.passWord);
                             }
                             break;
                         case Yacht.MODE_CREATE_SECRET_ROOM:
-                            //여기 고쳐야함
                             if (inMsg.message.equals("비밀 방이 이미 존재합니다.")) {
                                 if (Objects.equals(inMsg.userID, t_userID.getText())) {
                                     JOptionPane.showMessageDialog(YachtDiceClient.this, inMsg.message, "경고", JOptionPane.WARNING_MESSAGE);
@@ -177,15 +237,24 @@ public class YachtDiceClient extends JFrame {
                                 break;
                             } else {
                                 // 존재하는 모든 방 다시 출력
-                                requestRoomList();
+                                //requestRoomList();
+                                if (Objects.equals(inMsg.userID, t_userID.getText())) {
+                                    enterRoom(t_userID.getText(), inMsg.roomTitle, 0, inMsg.passWord);
+                                }
+                                //enterRoom(t_userID.getText(), inMsg.roomTitle, 0, inMsg.passWord);
                             }
                             break;
                         case Yacht.MODE_ROOM_LIST:
                             String roomTitlesString = inMsg.message; // 쉼표로 구분된 방 제목 문자열 수신
                             String[] roomTitlesArray = roomTitlesString.split(","); // 쉼표로 분리하여 배열로 변환
 
-
                             displayRoomList(roomTitlesArray); // 방 목록 출력
+                            break;
+                        case Yacht.MODE_ENTER_ROOM:
+                            if (Objects.equals(inMsg.userID, t_userID.getText())) {
+                                System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
+                                //openRoomWindow(roomTitle_copy);
+                            }
                             break;
                     }
                 } catch (IOException e) {
@@ -211,9 +280,9 @@ public class YachtDiceClient extends JFrame {
         receiveThread.start();
     }
 
-    private void requestRoomList() {
-        send(new Yacht(uid, Yacht.MODE_REQUEST_ROOM_LIST, "")); // 서버에 방 목록 요청
-    }
+//    private void requestRoomList() {
+//        send(new Yacht(uid, Yacht.MODE_REQUEST_ROOM_LIST, "")); // 서버에 방 목록 요청
+//    }
 
     private void refresh() {
         roomPanel.revalidate(); // 패널 갱신

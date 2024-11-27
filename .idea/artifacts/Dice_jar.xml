@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="YachtDiceServer:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/YachtDiceServer_jar</output-path>
+  <artifact type="jar" name="Dice:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Dice_jar</output-path>
     <root id="archive" name="Dice.jar">
       <element id="module-output" name="Dice" />
     </root>
