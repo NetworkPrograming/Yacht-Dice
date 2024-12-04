@@ -8,6 +8,8 @@ import java.util.Random;
 
 public class GameGUI extends JFrame {
 
+    private YachtDiceClient client;
+
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpeg")).getImage();
 
@@ -30,7 +32,7 @@ public class GameGUI extends JFrame {
     Random rand;
 
 
-    public GameGUI(ObjectInputStream in,ObjectOutputStream out) {
+    public GameGUI(YachtDiceClient client, ObjectInputStream in,ObjectOutputStream out) {
         super("Yacht-Dice");
         this.in = in;
         this.out = out;
@@ -39,6 +41,14 @@ public class GameGUI extends JFrame {
         counts = new int[MAX_DICE_NUM];
 
         rand = new Random();
+
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                client.setVisible(true);
+                dispose();
+            }
+        });
 
         setPreferredSize(new Dimension(1600, 770));
         pack();
