@@ -12,6 +12,7 @@ public class YachtDiceClient extends JFrame {
     private String serverAddress;
     private int serverPort;
     private JTextField t_userID;
+    private JTextField t_IP;
 
     private JButton b_connect;
     private JButton b_disconnect;
@@ -445,6 +446,12 @@ public class YachtDiceClient extends JFrame {
         b_connect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(t_IP.getText().isEmpty()){
+                    JOptionPane.showMessageDialog(YachtDiceClient.this, "IP를 입력해주세요.", "경고", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                YachtDiceClient.this.serverAddress = t_IP.getText();
+
                 try {
                     String text = t_userID.getText();
                     if (check_space(text)) {
@@ -466,7 +473,7 @@ public class YachtDiceClient extends JFrame {
                         b_createRoom.setEnabled(true);
                     }
                 } catch (UnknownHostException e1) {
-                    printDisplay("서버 주소와 포트번호를 확인하세요 : " + e1.getMessage());
+                    printDisplay("서버 주소를 확인하세요");
                     return;
                 } catch (IOException e1) {
                     printDisplay("서버와의 연결 오류 : " + e1.getMessage());
@@ -613,12 +620,19 @@ public class YachtDiceClient extends JFrame {
     private JPanel createInfoPanel() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        t_userID = new JTextField(12);
+        t_IP = new JTextField(10);
 
+        t_IP.setText(getLocalAddr());
+        t_IP.setHorizontalAlignment(JTextField.CENTER);
+
+        t_userID = new JTextField(12);
         //t_userID.setText("guest" + getLocalAddr().split("\\.")[3]);
         Random random = new Random();
         t_userID.setText("도전자" + (random.nextInt(100) + 1));
         t_userID.setHorizontalAlignment(JTextField.CENTER);
+
+        p.add(new JLabel("IP:"));
+        p.add(t_IP);
 
         p.add(new JLabel("아이디:"));
         p.add(t_userID);

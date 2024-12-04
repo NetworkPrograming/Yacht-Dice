@@ -370,8 +370,8 @@ public class YachtDiceServer extends JFrame {
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(port);
-            printDisplay("서버가 시작되었습니다.");
-            //printDisplay("서버가 시작되었습니다. " + getLocalAddr());
+            //printDisplay("서버가 시작되었습니다.");
+            printDisplay("서버가 시작되었습니다. " + getLocalAddr());
 
             while (acceptThread == Thread.currentThread()) {
                 clientSocket = serverSocket.accept();
