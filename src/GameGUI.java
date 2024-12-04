@@ -89,14 +89,84 @@ public class GameGUI extends JFrame {
     }
 
     private JPanel ScorePanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(scoreBoard, 0, 0, 360, 750, this);
-            }
+//        JPanel panel = new JPanel() {
+//            @Override
+//            protected void paintComponent(Graphics g) {
+//                super.paintComponent(g);
+//                g.drawImage(scoreBoard, 0, 0, 360, 750, this);
+//            }
+//        };
+//        panel.setLayout(null);
+//        return panel;
+
+        JPanel panel = new JPanel();
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        panel.setLayout(new GridLayout(16, 5));
+
+        String[] rowLabels = {
+                " ", "에이스","듀얼","트리플","쿼드","펜타","헥사","보너스점수","상단항목 합계",
+                "초이스","포커","풀하우스","스몰스트레이트","라지스트레이트","요트","합계"
         };
-        panel.setLayout(null);
+
+        // 버튼 생성 및 추가
+        JButton[][] buttons = new JButton[16][5];
+        // 15x4 점수판 + 1행/1열 레이블 생성
+        for (int row = 0; row < 16; row++) { // 15 + 1
+            for (int col = 0; col < 5; col++) {// 4 + 1
+                gbc.gridx = col;
+                gbc.gridy = row;
+
+                if (row == 0 && col == 0) {
+                    // 좌측 상단 모서리 (빈칸)
+                    panel.add(new JLabel(""));
+                } else if (row == 0) {
+                    // 1행: 열 헤더
+                    JLabel header = new JLabel("User " + col, SwingConstants.CENTER); // 후에 참가자 아이디로 변경
+                    header.setFont(new Font("Arial", Font.BOLD, 14));
+                    panel.add(header);
+                } else if (col == 0) {
+                    // 1열: 행 헤더
+                    JLabel header = new JLabel(rowLabels[row], SwingConstants.CENTER); // rowLabels 배열 사용
+                    header.setFont(new Font("Arial", Font.BOLD, 14));
+                    if(row == 7 || row == 8 || row == 15){
+                        header.setForeground(Color.WHITE);
+                        header.setBackground(Color.LIGHT_GRAY);
+                        header.setOpaque(true);
+                    }
+                    panel.add(header, gbc);
+//                } else if (row == 7){
+//                    JButton button = new JButton("0/63");
+//                    button.setForeground(Color.WHITE);
+//                    button.setBackground(Color.LIGHT_GRAY);
+//                    button.setOpaque(true);
+                } else {
+                    // 나머지 버튼 생성
+                    JButton button = new JButton(""); // 초기값 "0"
+                    button.setFont(new Font("Arial", Font.BOLD, 16));
+                    panel.add(button);
+
+                    // 버튼 클릭 이벤트 처리
+                    int finalRow = row - 1; // 실제 데이터는 0부터 시작
+                    int finalCol = col - 1;
+                    button.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // 버튼 클릭 시 동작 (값 증가)
+                        }
+
+                    });
+                }
+            }
+            // 줄 삽입 (가로선)
+//            if (row==7) {
+//                gbc.gridy = row;
+//                gbc.gridx = 0;
+//                gbc.gridwidth = 5; // 전체 열에 적용
+//                JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+//                panel.add(separator, gbc);
+//            }
+        }
         return panel;
     }
 
@@ -176,7 +246,7 @@ public class GameGUI extends JFrame {
         Arrays.fill(dices, 1);
 
         for(int i=0;i<DICE_SIZE;i++) { //주사위 버튼 만들기
-            b_dices[i] = createDiceButton("resources/dice" + (i+1) + ".png" , 200 + (i*90),200);
+            b_dices[i] = createDiceButton("resources/dice" + (i+1) + ".png" , 200 + (i*90),210);
             jPanel.add(b_dices[i]);
         }
 
