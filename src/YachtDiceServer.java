@@ -193,7 +193,8 @@ public class YachtDiceServer extends JFrame {
                             } else {
                                 // 방이 가득 찼을 경우
                                 String message = targetRoom.getTitle() + " 방이 가득 차서 입장할 수 없습니다.";
-                                printDisplay(message);
+                                msg.message = message;
+                                printDisplay(uid +"님 "+ message);
                                 //msg.message = message;
                                 send(msg); // 현재 클라이언트에게만 전송
                             }

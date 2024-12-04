@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.*;
 import java.util.Objects;
@@ -162,12 +164,19 @@ public class YachtDiceClient extends JFrame {
     private void openRoomWindow(String roomTitle) {
         // 방 접속 후 바로 GameGUI 창을 띄운다
         //System.out.println(roomTitle + " 방에 접속");
+        this.setVisible(false);  // 클라이언트 창 숨기기
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                GameGUI gameGUI = new GameGUI(in, out);
+                GameGUI gameGUI = new GameGUI(YachtDiceClient.this, in, out);
+
+                gameGUI.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        printDisplay("게임창 닫힘");
+                    }
+                });
                 gameGUI.setVisible(true);  // GameGUI 창 보이기
-                setVisible(false);
             }
         });  // GameGUI 창 바로 실행
     }
@@ -252,9 +261,13 @@ public class YachtDiceClient extends JFrame {
                             displayRoomList(roomTitlesArray); // 방 목록 출력
                             break;
                         case Yacht.MODE_ENTER_ROOM:
-                            if (Objects.equals(inMsg.userID, t_userID.getText())) {
-                                System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
-                                openRoomWindow(roomTitle_copy);
+                            if (inMsg.message.equals(roomTitle_copy + " 방이 가득 차서 입장할 수 없습니다.")) {
+                                printDisplay(inMsg.message);
+                            } else {
+                                if (Objects.equals(inMsg.userID, t_userID.getText())) {
+                                    System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
+                                    openRoomWindow(roomTitle_copy);
+                                }
                             }
                             break;
                     }
@@ -446,7 +459,7 @@ public class YachtDiceClient extends JFrame {
         b_connect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(t_IP.getText().isEmpty()){
+                if (t_IP.getText().isEmpty()) {
                     JOptionPane.showMessageDialog(YachtDiceClient.this, "IP를 입력해주세요.", "경고", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
