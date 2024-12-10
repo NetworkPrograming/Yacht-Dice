@@ -509,7 +509,7 @@ public class GameGUI extends JFrame {
         }
     }
 
-/////테스트용main(주석처리해주세요)////////
+/////테스트용main////////
 
     public static void main(String[] args) {
         GameGUI g = new GameGUI(null,null,null);
