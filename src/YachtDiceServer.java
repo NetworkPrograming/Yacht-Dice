@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.List;
@@ -38,8 +40,6 @@ public class YachtDiceServer extends JFrame {
         });
         acceptThread.start();
     }
-
-    /// /////////////////////////////////////////////////////////////////////////
 
     private class ClientHandler extends Thread {
         private Socket clientSocket;
@@ -94,12 +94,10 @@ public class YachtDiceServer extends JFrame {
                     } else if (msg.mode == Yacht.MODE_TX_STRING) {
                         String message = uid + "님의 채팅: " + msg.message;
                         printDisplay(message);
-                        message = uid + ": " + msg.message;
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_TX_IMAGE) {
                         printDisplay(uid + ": " + msg.message);
                         broadcasting(msg);
-                        ///////////////////////
                     } else if (msg.mode == Yacht.MODE_CREATE_NORMAL_ROOM) {
                         // 방이 존재하는지 확인
                         int check = 1;
@@ -117,7 +115,6 @@ public class YachtDiceServer extends JFrame {
                             // 방 생성
                             Room newRoom = new Room(msg.roomTitle, msg.passWord, 4); // 최대 4명
                             rooms.add(newRoom);
-                            //newRoom.addPeople(uid); // 참가자 추가
                             String message = uid + "님이 \"" + msg.message + "\" 일반 방을 생성하였습니다.";
 
                             createRoom(msg.roomTitle, msg.passWord);
@@ -144,7 +141,6 @@ public class YachtDiceServer extends JFrame {
                             // 방 생성
                             Room newRoom = new Room(msg.roomTitle, msg.passWord, 4); // 최대 4명
                             rooms.add(newRoom);
-                            //newRoom.addPeople(uid); // 참가자 추가
                             String message = uid + "님이 \"" + msg.message + "\" 비밀 방을 생성하였습니다.\n";
                             message += "생성된 방의 비밀번호는 \"" + msg.passWord + "\" 입니다.";
 
@@ -160,8 +156,6 @@ public class YachtDiceServer extends JFrame {
 
                         Room targetRoom = null;
                         for (Room room : rooms) {
-                            //System.out.println(msg.message);
-                            //System.out.println(msg.passWord);
                             if (room.getTitle().equals(msg.message)) {
                                 targetRoom = room;
                                 break;
@@ -174,13 +168,11 @@ public class YachtDiceServer extends JFrame {
                             if (currentPeopleCount < targetRoom.getMaxPeople()) {
                                 // 방에 참가 가능
                                 targetRoom.addPeople(uid); // 참가자 추가
-//                                String message = uid + "님이 \"" + msg.message + "\" 방에 입장하였습니다.\n";
-//                                message += "현재 방의 인원 수는 \"" + (currentPeopleCount + 1) + "명\" 입니다.";
-//                                printDisplay(message);
-                                List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
 
+                                List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
                                 printDisplay(targetRoom.getTitle() + " 방에 " + uid + "님이 참가하였습니다.");
                                 printDisplay(targetRoom.getTitle() + " 방의 참가자 목록 :");
+
                                 if (people.isEmpty()) {
                                     printDisplay("현재 참가자가 없습니다.");
                                 } else {
@@ -194,21 +186,63 @@ public class YachtDiceServer extends JFrame {
                                 // 방이 가득 찼을 경우
                                 String message = targetRoom.getTitle() + " 방이 가득 차서 입장할 수 없습니다.";
                                 msg.message = message;
-                                printDisplay(uid +"님 "+ message);
-                                //msg.message = message;
-                                send(msg); // 현재 클라이언트에게만 전송
+                                printDisplay(uid + "님 " + message);
+                                send(msg);
                             }
                         } else {
                             // 방이 존재하지 않는 경우
                             String message = "존재하지 않는 방입니다.";
                             printDisplay(message);
                             msg.message = message;
-                            send(msg); // 현재 클라이언트에게만 전송
+                            send(msg);
                         }
-//                        String message = uid + "님이 \"" + msg.message + "\" 방에 입장하였습니다.\n";
-//                        message += "방의 인원은 \"" + "(테스트 4)" + "명\" 입니다.";
-//                        printDisplay(message);
-//                        broadcasting(msg);
+                    } else if (msg.mode == Yacht.MODE_QUIT_ROOM) {
+                        //방 퇴장
+                        Room targetRoom = null;
+                        for (Room room : rooms) {
+                            if (room.getTitle().equals(msg.message)) {
+                                targetRoom = room;
+                                break;
+                            }
+                        }
+
+                        if (targetRoom != null) {
+                            // 방에서 사용자 제거
+                            targetRoom.removePeople(uid);
+
+                            // 방의 현재 참가자 수 확인
+                            int currentPeopleCount = targetRoom.getPeople().size();
+                            String message = uid + "님이 \"" + targetRoom.getTitle() + "\" 방에서 퇴장하였습니다.";
+                            printDisplay(message);
+
+                            // 퇴장 메시지를 모든 클라이언트에게 방송
+                            msg.message = message;
+                            broadcasting(msg);
+
+                            // 방의 참가자 목록 출력
+                            List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
+                            if (people.isEmpty()) {
+                                System.out.println("현재 \"" + targetRoom.getTitle() + "\" 방에 참가자가 없습니다.");
+                            } else {
+                                printDisplay(targetRoom.getTitle() + " 방의 참가자 목록 :");
+                                for (String userID : people) {
+                                    printDisplay("- " + userID);
+                                }
+                                printDisplay("");
+                            }
+                            // 방에 더 이상 참가자가 없다면 방 삭제
+                            if (currentPeopleCount == 0) {
+                                rooms.remove(targetRoom); // 방 삭제
+                                printDisplay("현재 \"" + targetRoom.getTitle() + "\" 방에 참가자가 없어 방이 삭제되었습니다.");
+                            }
+                        } else {
+                            String message = "존재하지 않는 방입니다.";
+                            printDisplay(message);
+                            msg.message = message;
+                            send(msg);
+                        }
+                        sendRoomListToClients();
+                        refresh();
                     }
                 }
                 users.removeElement(this);
@@ -232,7 +266,7 @@ public class YachtDiceServer extends JFrame {
             StringBuilder roomList = new StringBuilder();
             for (Room room : rooms) {
                 // 방 제목과 비밀번호 존재 여부를 체크하여 문자열 생성
-                roomList.append(room.getTitle()).append(room.getPassword() != null ? ":"+room.getPassword() : ":0").append(",");
+                roomList.append(room.getTitle()).append(room.getPassword() != null ? ":" + room.getPassword() : ":0").append(",");
                 // ":0"은 비밀번호 없음
             }
             // 마지막 쉼표 제거
@@ -241,6 +275,40 @@ public class YachtDiceServer extends JFrame {
             }
             Yacht roomListMsg = new Yacht(null, Yacht.MODE_ROOM_LIST, roomList.toString()); // 방 목록을 문자열로 전송
             broadcasting(roomListMsg);
+
+            String[] roomTitlesArray = roomList.toString().split(","); // 쉼표로 분리하여 배열로 변환
+            displayRoomList(roomTitlesArray);
+        }
+
+        private void displayRoomList(String[] roomEntries) {
+            roomPanel.removeAll(); // 기존 방 버튼 제거
+
+            for (String entry : roomEntries) {
+                String[] parts = entry.split(":"); // 방 제목과 비밀번호 존재 여부를 ":"로 분리
+                String title = parts[0]; // 방 제목
+                boolean hasPassword = parts.length > 1 && !parts[1].equals("0"); // 비밀번호 존재 여부 체크
+                String password_temp = "d";
+                if (title == null || title.trim().isEmpty()) {
+                    // 방 이름이 없을때 아무일도 일어나지 않아야함.
+                } else {
+                    JButton roomButton;
+                    if (hasPassword) {
+                        password_temp = parts[1];
+                        roomButton = new JButton("<html><div style='text-align: center;'>" + title + "<br>비밀번호: " + password_temp + "</div></html>");
+                    } else {
+                        password_temp = null;
+                        roomButton = new JButton(title);
+                    }
+
+                    roomButton.setPreferredSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 가로 크기 설정
+                    roomButton.setMaximumSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 최대 크기 설정
+
+                    roomPanel.add(roomButton); // 방 버튼 추가
+                    roomPanel.add(Box.createVerticalStrut(50)); // 버튼 아래쪽 여백 추가
+                }
+            }
+            roomPanel.revalidate(); // 패널 업데이트
+            roomPanel.repaint(); // 화면 다시 그리기
         }
 
         private void send(Yacht msg) {
@@ -262,8 +330,6 @@ public class YachtDiceServer extends JFrame {
             receiveMessages(clientSocket);
         }
     }
-
-    /// /////////////////////////////////////////////////////////////////////////
 
     private void createRoom(String roomTitle, String password) {
         JButton roomButton;
@@ -371,7 +437,6 @@ public class YachtDiceServer extends JFrame {
         Socket clientSocket = null;
         try {
             serverSocket = new ServerSocket(port);
-            //printDisplay("서버가 시작되었습니다.");
             printDisplay("서버가 시작되었습니다. " + getLocalAddr());
 
             while (acceptThread == Thread.currentThread()) {

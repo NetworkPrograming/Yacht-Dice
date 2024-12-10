@@ -2,16 +2,17 @@ import javax.swing.*;
 import java.io.Serializable;
 
 public class Yacht implements Serializable {
-    public final static int MODE_LOGIN = 0x1;        // 0001
-    public final static int MODE_LOGOUT = 0x2;       // 0010
-    public final static int MODE_TX_STRING = 0x10;   // 0001 0000
-    public final static int MODE_TX_FILE = 0x20;     // 0010 0000
-    public final static int MODE_TX_IMAGE = 0x40;    // 0100 0000
-    public final static int MODE_CREATE_NORMAL_ROOM = 0x80;  // 1000 0000
-    public final static int MODE_CREATE_SECRET_ROOM = 0x100; // 0001 0000 0000
-    public final static int MODE_ENTER_ROOM = 0x200; // 0010 0000 0000
-    public final static int MODE_REQUEST_ROOM_LIST = 0x800; // 0100 0000 0000
-    public final static int MODE_ROOM_LIST = 0x1600; // 0100 0000 0000
+    public final static int MODE_LOGIN = 0x1;                   // 0001
+    public final static int MODE_LOGOUT = 0x2;                  // 0010
+    public final static int MODE_TX_STRING = 0x10;              // 0001 0000
+    public final static int MODE_TX_FILE = 0x20;                // 0010 0000
+    public final static int MODE_TX_IMAGE = 0x40;               // 0100 0000
+    public final static int MODE_CREATE_NORMAL_ROOM = 0x80;     // 1000 0000
+    public final static int MODE_CREATE_SECRET_ROOM = 0x100;    // 0001 0000 0000
+    public final static int MODE_ENTER_ROOM = 0x200;            // 0010 0000 0000
+    public final static int MODE_REQUEST_ROOM_LIST = 0x400;     // 0100 0000 0000
+    public final static int MODE_ROOM_LIST = 0x800;             // 1000 0000 0000
+    public final static int MODE_QUIT_ROOM = 0x1000;            // 0001 0000 0000 0000
 
     String userID;
     int mode;
@@ -57,6 +58,9 @@ public class Yacht implements Serializable {
         }
         else if (code == MODE_REQUEST_ROOM_LIST) {
             this.message = ""; // message를 message 사용
+        }
+        else if (code == MODE_QUIT_ROOM) {
+            this.message = message; // message를 message 사용
         }
     }
 
