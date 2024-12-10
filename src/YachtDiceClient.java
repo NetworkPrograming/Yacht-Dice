@@ -89,8 +89,8 @@ public class YachtDiceClient extends JFrame {
                     //printDisplay(title + "!");
                 }
 
-                roomButton.setPreferredSize(new Dimension(209, 70)); // 버튼 가로 크기 설정
-                roomButton.setMaximumSize(new Dimension(209, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
+                roomButton.setPreferredSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 가로 크기 설정
+                roomButton.setMaximumSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 최대 크기 설정
 
                 String finalPassword_temp = password_temp;
                 String finaltitle_temp = title;
@@ -426,7 +426,7 @@ public class YachtDiceClient extends JFrame {
 
         // 왼쪽 패널
         JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.add(createDisplayPanel(), BorderLayout.CENTER);// 기존의 createDisplayPanel 호출
+        leftPanel.add(createDisplayPanel(), BorderLayout.CENTER);
         JPanel p = new JPanel(new GridLayout(2, 1));
         p.add(createInfoPanel());
         p.add(createControlPanel());
@@ -535,7 +535,7 @@ public class YachtDiceClient extends JFrame {
     private JPanel createInputPanel() {
         JPanel p = new JPanel(new BorderLayout());
 
-        t_input = new JTextField(30);
+        t_input = new JTextField(20);
         t_input.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

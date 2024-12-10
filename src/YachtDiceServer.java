@@ -274,8 +274,8 @@ public class YachtDiceServer extends JFrame {
         } else {
             roomButton = new JButton("<html><div style='text-align: center;'>" + roomTitle + "<br>비밀번호: " + password + "</div></html>");
         }
-        roomButton.setPreferredSize(new Dimension(233, 70)); // 버튼 가로 크기 설정
-        roomButton.setMaximumSize(new Dimension(233, 70)); // 버튼 최대 크기 설정하여 가로 중앙 정렬 유지
+        roomButton.setPreferredSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 가로 크기 설정
+        roomButton.setMaximumSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 최대 크기 설정
 
         // 방 목록 패널에 버튼 추가
         roomPanel.add(roomButton); // 버튼 추가
