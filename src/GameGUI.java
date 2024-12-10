@@ -192,7 +192,7 @@ public class GameGUI extends JFrame {
         Border border = BorderFactory.createLineBorder(Color.darkGray, 2);
         textArea.setBorder(border);
         textArea.setBounds(15, 10, 250, 625);
-        textArea.setFont(new Font("Arial", Font.PLAIN, 14)); // 폰트 설정
+        textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14)); // 폰트 설정
         panel.add(textArea);
 
         // 메시지 입력 필드
@@ -509,10 +509,10 @@ public class GameGUI extends JFrame {
         }
     }
 
-//////테스트용////////
-//
-//    public static void main(String[] args) {
-//        GameGUI g = new GameGUI();
-//    }
+/////테스트용main(주석처리해주세요)////////
+
+    public static void main(String[] args) {
+        GameGUI g = new GameGUI(null,null,null);
+    }
 }
 
