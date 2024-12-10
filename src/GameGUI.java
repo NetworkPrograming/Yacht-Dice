@@ -206,20 +206,20 @@ public class GameGUI extends JFrame {
         b_send = new JButton();
         String sendImage = "/resources/send_button.png";
 
-// 이미지 로드 및 크기 조정
+        // 이미지 로드 및 크기 조정
         ImageIcon originalIcon = new ImageIcon(getClass().getResource(sendImage));
         Image scaledImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
 
-// 버튼에 스케일된 이미지 설정
+        // 버튼에 스케일된 이미지 설정
         b_send.setIcon(scaledIcon);
 
-// 버튼 크기 및 위치 설정
+        // 버튼 크기 및 위치 설정
         b_send.setBounds(235, 640, 30, 30);
         b_send.setContentAreaFilled(false); // 배경 제거
 
 
-// 패널에 추가
+        // 패널에 추가
         panel.add(b_send);
 
 
@@ -289,8 +289,17 @@ public class GameGUI extends JFrame {
         }
 
         // 굴리기 버튼
-        b_roll = new JButton("Roll!");
-        b_roll.setBounds(280, 300, 100, 100);
+        b_roll = new JButton();
+        String rollImage = "/resources/roll_button.png";
+
+        // 이미지 로드 및 크기 조정
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource(rollImage));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(200, 110, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+        b_roll.setIcon(scaledIcon);
+        b_roll.setContentAreaFilled(false); // 배경 제거
+        b_roll.setBorderPainted(false);
+        b_roll.setBounds(230, 400, 200, 110);
         b_roll.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
