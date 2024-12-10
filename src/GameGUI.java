@@ -1,5 +1,6 @@
 import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -12,6 +13,7 @@ public class GameGUI extends JFrame {
 
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpeg")).getImage();
+    private Image sendButton = new ImageIcon(getClass().getResource("/resources/send_button.png")).getImage();
 
     JButton giveUpButton = new JButton("Give Up");
     JButton b_roll;
@@ -50,7 +52,7 @@ public class GameGUI extends JFrame {
             }
         });
 
-        setPreferredSize(new Dimension(1600, 770));
+        setPreferredSize(new Dimension(1600, 720));
         pack();
         setResizable(false);
         setLocationRelativeTo(null);
@@ -71,18 +73,18 @@ public class GameGUI extends JFrame {
 
         // 점수 패널을 레이어 1에 추가
         JPanel scorePanel = ScorePanel();
-        scorePanel.setBounds(0, 0, 360, 750); // 점수판 크기 설정
+        scorePanel.setBounds(0, 0, 300, 750); // 점수판 크기 설정
         layeredPane.add(scorePanel, Integer.valueOf(1)); // 레이어 1에 점수판 추가
 
         // 채팅 패널을 레이어 2에 추가
         JPanel chatPanel = ChatPanel();
-        chatPanel.setBounds(1150, 0, 320, 760); // 채팅판 크기 설정
-        layeredPane.add(chatPanel, Integer.valueOf(100)); // 레이어 2에 채팅판 추가
+        chatPanel.setBounds(1000, 0, 320, 760); // 채팅판 크기 설정
+        layeredPane.add(chatPanel, Integer.valueOf(300)); // 레이어 2에 채팅판 추가
 
         // 주사위 패널을 레이어 200에 추가
         JPanel dicePanel = AddDiceComponents();
-        dicePanel.setBounds(330, 0, 830, 750);
-        layeredPane.add(dicePanel, Integer.valueOf(200));
+        dicePanel.setBounds(330, 0, 700, 750);
+        layeredPane.add(dicePanel, Integer.valueOf(10));
     }
 
     private JPanel BackgroundPanel() {
@@ -90,7 +92,7 @@ public class GameGUI extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(backgroundImage, 330, 0, 1200, 750, this);
+                g.drawImage(backgroundImage, 300, 0, 1200, 750, this);
             }
         };
         panel.setLayout(null);
@@ -99,106 +101,127 @@ public class GameGUI extends JFrame {
     }
 
     private JPanel ScorePanel() {
-//        JPanel panel = new JPanel() {
-//            @Override
-//            protected void paintComponent(Graphics g) {
-//                super.paintComponent(g);
-//                g.drawImage(scoreBoard, 0, 0, 360, 750, this);
-//            }
-//        };
-//        panel.setLayout(null);
-//        return panel;
-
-        JPanel panel = new JPanel();
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.setLayout(new GridLayout(16, 5));
-
-        String[] rowLabels = {
-                " ", "에이스","듀얼","트리플","쿼드","펜타","헥사","보너스점수","상단항목 합계",
-                "초이스","포커","풀하우스","스몰스트레이트","라지스트레이트","요트","합계"
-        };
-
-        // 버튼 생성 및 추가
-        JButton[][] buttons = new JButton[16][5];
-        // 15x4 점수판 + 1행/1열 레이블 생성
-        for (int row = 0; row < 16; row++) { // 15 + 1
-            for (int col = 0; col < 5; col++) {// 4 + 1
-                gbc.gridx = col;
-                gbc.gridy = row;
-
-                if (row == 0 && col == 0) {
-                    // 좌측 상단 모서리 (빈칸)
-                    panel.add(new JLabel(""));
-                } else if (row == 0) {
-                    // 1행: 열 헤더
-                    JLabel header = new JLabel("User " + col, SwingConstants.CENTER); // 후에 참가자 아이디로 변경
-                    header.setFont(new Font("Arial", Font.BOLD, 14));
-                    panel.add(header);
-                } else if (col == 0) {
-                    // 1열: 행 헤더
-                    JLabel header = new JLabel(rowLabels[row], SwingConstants.CENTER); // rowLabels 배열 사용
-                    header.setFont(new Font("Arial", Font.BOLD, 14));
-                    if(row == 7 || row == 8 || row == 15){
-                        header.setForeground(Color.WHITE);
-                        header.setBackground(Color.LIGHT_GRAY);
-                        header.setOpaque(true);
-                    }
-                    panel.add(header, gbc);
-//                } else if (row == 7){
-//                    JButton button = new JButton("0/63");
-//                    button.setForeground(Color.WHITE);
-//                    button.setBackground(Color.LIGHT_GRAY);
-//                    button.setOpaque(true);
-                } else {
-                    // 나머지 버튼 생성
-                    JButton button = new JButton(""); // 초기값 "0"
-                    button.setFont(new Font("Arial", Font.BOLD, 16));
-                    panel.add(button);
-
-                    // 버튼 클릭 이벤트 처리
-                    int finalRow = row - 1; // 실제 데이터는 0부터 시작
-                    int finalCol = col - 1;
-                    button.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            // 버튼 클릭 시 동작 (값 증가)
-                        }
-
-                    });
-                }
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+               g.drawImage(scoreBoard, 0, 0, 300, 750, this);
             }
-            // 줄 삽입 (가로선)
-//            if (row==7) {
-//                gbc.gridy = row;
-//                gbc.gridx = 0;
-//                gbc.gridwidth = 5; // 전체 열에 적용
-//                JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-//                panel.add(separator, gbc);
-//            }
-        }
+        };
+        panel.setLayout(null);
         return panel;
+
+//        JPanel panel = new JPanel();
+//        GridBagConstraints gbc = new GridBagConstraints();
+//        gbc.fill = GridBagConstraints.BOTH;
+//        panel.setLayout(new GridLayout(16, 5));
+//
+//        String[] rowLabels = {
+//                " ", "에이스","듀얼","트리플","쿼드","펜타","헥사","보너스점수","상단항목 합계",
+//                "초이스","포커","풀하우스","스몰스트레이트","라지스트레이트","요트","합계"
+//        };
+//
+//        // 버튼 생성 및 추가
+//        JButton[][] buttons = new JButton[16][5];
+//        // 15x4 점수판 + 1행/1열 레이블 생성
+//        for (int row = 0; row < 16; row++) { // 15 + 1
+//            for (int col = 0; col < 5; col++) {// 4 + 1
+//                gbc.gridx = col;
+//                gbc.gridy = row;
+//
+//                if (row == 0 && col == 0) {
+//                    // 좌측 상단 모서리 (빈칸)
+//                    panel.add(new JLabel(""));
+//                } else if (row == 0) {
+//                    // 1행: 열 헤더
+//                    JLabel header = new JLabel("User " + col, SwingConstants.CENTER); // 후에 참가자 아이디로 변경
+//                    header.setFont(new Font("Arial", Font.BOLD, 14));
+//                    panel.add(header);
+//                } else if (col == 0) {
+//                    // 1열: 행 헤더
+//                    JLabel header = new JLabel(rowLabels[row], SwingConstants.CENTER); // rowLabels 배열 사용
+//                    header.setFont(new Font("Arial", Font.BOLD, 14));
+//                    if(row == 7 || row == 8 || row == 15){
+//                        header.setForeground(Color.WHITE);
+//                        header.setBackground(Color.LIGHT_GRAY);
+//                        header.setOpaque(true);
+//                    }
+//                    panel.add(header, gbc);
+////                } else if (row == 7){
+////                    JButton button = new JButton("0/63");
+////                    button.setForeground(Color.WHITE);
+////                    button.setBackground(Color.LIGHT_GRAY);
+////                    button.setOpaque(true);
+//                } else {
+//                    // 나머지 버튼 생성
+//                    JButton button = new JButton(""); // 초기값 "0"
+//                    button.setFont(new Font("Arial", Font.BOLD, 16));
+//                    panel.add(button);
+//
+//                    // 버튼 클릭 이벤트 처리
+//                    int finalRow = row - 1; // 실제 데이터는 0부터 시작
+//                    int finalCol = col - 1;
+//                    button.addActionListener(new ActionListener() {
+//                        @Override
+//                        public void actionPerformed(ActionEvent e) {
+//                            // 버튼 클릭 시 동작 (값 증가)
+//                        }
+//
+//                    });
+//                }
+//            }
+//            // 줄 삽입 (가로선)
+////            if (row==7) {
+////                gbc.gridy = row;
+////                gbc.gridx = 0;
+////                gbc.gridwidth = 5; // 전체 열에 적용
+////                JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+////                panel.add(separator, gbc);
+////            }
+//        }
+//        return panel;
     }
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
-        //panel.setOpaque(false); // 패널을 투명하게 설정
+        panel.setOpaque(false); // 패널을 투명하게 설정
         panel.setLayout(null);
         // JTextArea 추가하여 메시지 표시
         textArea.setEditable(false);
-        textArea.setBounds(10, 10, 300, 650);
+        //textArea.setOpaque(false);
+        Border border = BorderFactory.createLineBorder(Color.darkGray, 2);
+        textArea.setBorder(border);
+        textArea.setBounds(15, 10, 250, 625);
         textArea.setFont(new Font("Arial", Font.PLAIN, 14)); // 폰트 설정
         panel.add(textArea);
 
         // 메시지 입력 필드
         t_input = new JTextField();
-        t_input.setBounds(10, 700, 250, 40);
+        //t_input.setOpaque(false);
+        t_input.setBorder(border);
+        t_input.setBounds(15, 640, 220, 30);
         panel.add(t_input);
 
         // 메시지 보내기 버튼
-        b_send = new JButton("Send");
-        b_send.setBounds(260, 700, 50, 40);
+        b_send = new JButton();
+        String sendImage = "/resources/send_button.png";
+
+// 이미지 로드 및 크기 조정
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource(sendImage));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+
+// 버튼에 스케일된 이미지 설정
+        b_send.setIcon(scaledIcon);
+
+// 버튼 크기 및 위치 설정
+        b_send.setBounds(235, 640, 30, 30);
+        b_send.setContentAreaFilled(false); // 배경 제거
+
+
+// 패널에 추가
         panel.add(b_send);
+
 
         // 엔터와 버튼 클릭으로 메시지 전송
         b_send.addActionListener(new ActionListener() {
@@ -255,14 +278,19 @@ public class GameGUI extends JFrame {
         jPanel.setLayout(null);
         Arrays.fill(dices, 1);
 
+        b_dices[0] = createDiceButton("resources/dice" + 1 + ".png" , 110,210);
+        b_dices[1] = createDiceButton("resources/dice" + 2 + ".png" , 200,210);
+        b_dices[2] = createDiceButton("resources/dice" + 3 + ".png" , 295,210);
+        b_dices[3] = createDiceButton("resources/dice" + 4 + ".png" , 390,210);
+        b_dices[4] = createDiceButton("resources/dice" + 5 + ".png" , 490,210);
+
         for(int i=0;i<DICE_SIZE;i++) { //주사위 버튼 만들기
-            b_dices[i] = createDiceButton("resources/dice" + (i+1) + ".png" , 200 + (i*90),210);
             jPanel.add(b_dices[i]);
         }
 
         // 굴리기 버튼
         b_roll = new JButton("Roll!");
-        b_roll.setBounds(360, 300, 100, 100);
+        b_roll.setBounds(280, 300, 100, 100);
         b_roll.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -480,5 +508,11 @@ public class GameGUI extends JFrame {
             System.err.println("Error playing sound: " + e.getMessage());
         }
     }
+
+//////테스트용////////
+//
+//    public static void main(String[] args) {
+//        GameGUI g = new GameGUI();
+//    }
 }
 
