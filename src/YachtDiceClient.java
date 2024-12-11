@@ -37,10 +37,12 @@ public class YachtDiceClient extends JFrame {
     String password;
 
     private JTextArea t_display;
+    private JTextArea t_display_test;
     private JTextField t_input;
+    private JTextField t_input_test;
     private JButton b_send;
 
-    String roomTitle_copy;
+    String roomTitle_copy = "";
 
     public YachtDiceClient(String serverAddress, int serverPort) {
         super("Yacht Game Client");
@@ -84,12 +86,11 @@ public class YachtDiceClient extends JFrame {
                 roomButton.setMaximumSize(new Dimension(roomPanel.getParent().getWidth(), 70)); // 버튼 최대 크기 설정
 
                 String finalPassword_temp = password_temp;
-                String finaltitle_temp = title;
                 roomButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        roomTitle_copy = finaltitle_temp;
-                        enterRoom(t_userID.getText(), finaltitle_temp, 1, finalPassword_temp);
+                        roomTitle_copy = title;
+                        enterRoom(t_userID.getText(), title, 1, finalPassword_temp);
                     }
                 });
                 roomPanel.add(roomButton); // 방 버튼 추가
@@ -102,6 +103,7 @@ public class YachtDiceClient extends JFrame {
 
     private void enterRoom(String userIDID, String roomTitle, int flag, String password) {
         String roomtitle_temp;
+        roomTitle_copy = roomTitle;
         if (password != null) {
             String inputPassword = null;
 
@@ -137,30 +139,81 @@ public class YachtDiceClient extends JFrame {
         }
     }
 
+//    private void openRoomWindow(String roomTitle) {
+//        // 방 접속 후 바로 GameGUI 창을 띄운다
+//        this.setVisible(false);  // 클라이언트 창 숨기기
+//        SwingUtilities.invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                GameGUI gameGUI = new GameGUI(YachtDiceClient.this, in, out);
+//
+//                gameGUI.addWindowListener(new WindowAdapter() {
+//                    @Override
+//                    public void windowClosed(WindowEvent e) {
+//                        quit_room(roomTitle);
+//                        printDisplay(roomTitle + " 게임 방에서 퇴장하였습니다.");
+//
+//                    }
+//                });
+//                gameGUI.setVisible(true);
+//            }
+//        });
+//    }
+
     private void openRoomWindow(String roomTitle) {
-        // 방 접속 후 바로 GameGUI 창을 띄운다
         this.setVisible(false);  // 클라이언트 창 숨기기
-        SwingUtilities.invokeLater(new Runnable() {
+        JFrame newFrame = new JFrame(roomTitle);
+        newFrame.setSize(700, 800);
+        newFrame.setLocationRelativeTo(null);
+        newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
+
+        t_display_test = new JTextArea();
+        t_display_test.setEditable(false);
+        newFrame.add(t_display_test, BorderLayout.NORTH);
+        t_input_test = new JTextField(20);
+        newFrame.add(t_input_test, BorderLayout.CENTER);
+        t_input_test.addActionListener(new ActionListener() { // 엔터 치면 입력한 글자가 보내짐
             @Override
-            public void run() {
-                GameGUI gameGUI = new GameGUI(YachtDiceClient.this, in, out);
-
-                gameGUI.addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosed(WindowEvent e) {
-                        quit_room(roomTitle);
-                        printDisplay(roomTitle + " 게임 방에서 퇴장하였습니다.");
-
-                    }
-                });
-                gameGUI.setVisible(true);
+            public void actionPerformed(ActionEvent e) {
+                send_message_room(roomTitle);
             }
         });
+
+        // 창이 닫힐 때 기존 창을 다시 보이도록 설정
+        newFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                newFrame.dispose(); // 새로운 창 닫기
+                YachtDiceClient.this.setVisible(true); // 기존 창 다시 보이기
+                quit_room(roomTitle);
+                printDisplay(roomTitle + " 게임 방에서 퇴장하였습니다.");
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                YachtDiceClient.this.setVisible(true); // 기존 창 다시 보이기
+                quit_room(roomTitle);
+                printDisplay(roomTitle + " 게임 방에서 퇴장하였습니다.");
+            }
+        });
+
+        newFrame.setVisible(true);
+    }
+
+    private void printDisplay2(String msg) {
+        t_display_test.append(msg + "\n");
+        t_display_test.setCaretPosition(t_display_test.getDocument().getLength());
     }
 
     private void quit_room(String roomTitle) {
         String roomtitle_temp = roomTitle;
         send(new Yacht(t_userID.getText(), Yacht.MODE_QUIT_ROOM, roomtitle_temp));
+    }
+
+    private void send_message_room(String roomTitle) {
+        String roomtitle_temp = roomTitle;
+        send(new Yacht(t_userID.getText(), Yacht.MODE_TX_STRING_ROOM, roomtitle_temp, t_input_test.getText()));
+        t_input_test.setText("");
     }
 
     private void connectToServer() throws UnknownHostException, IOException {
@@ -244,6 +297,11 @@ public class YachtDiceClient extends JFrame {
                             break;
                         case Yacht.MODE_QUIT_ROOM:
                             break;
+                        case Yacht.MODE_TX_STRING_ROOM:
+                            if (roomTitle_copy.equals(inMsg.roomTitle)) { // 입장한 방과 채팅을 친 방이 같다면
+                                // 만약 입장을 하지 않았으면 방 이름은 없을것이고 다른 방에 입장했다면 조건에 만족하지 않을 것임
+                                printDisplay2(inMsg.message);
+                            }
                     }
                 } catch (IOException e) {
                     printDisplay("연결을 종료했습니다.");

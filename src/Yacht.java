@@ -13,6 +13,7 @@ public class Yacht implements Serializable {
     public final static int MODE_REQUEST_ROOM_LIST = 0x400;     // 0100 0000 0000
     public final static int MODE_ROOM_LIST = 0x800;             // 1000 0000 0000
     public final static int MODE_QUIT_ROOM = 0x1000;            // 0001 0000 0000 0000
+    public final static int MODE_TX_STRING_ROOM = 0x2000;       // 0010 0000 0000 0000
 
     String userID;
     int mode;
@@ -69,6 +70,9 @@ public class Yacht implements Serializable {
         if (code == MODE_CREATE_SECRET_ROOM) {
             this.roomTitle = message;
             this.passWord = passWord;
+        } else if (code == MODE_TX_STRING_ROOM) {
+            this.roomTitle = message;
+            this.message = passWord;
         }
     }
 
