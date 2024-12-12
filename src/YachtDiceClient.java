@@ -68,7 +68,6 @@ public class YachtDiceClient extends JFrame {
     int[] counts;
 
     Random rand;
-    String title;
 
     public void GameGUI() {
         dices = new int[DICE_SIZE];
@@ -157,14 +156,14 @@ public class YachtDiceClient extends JFrame {
         panel.add(textArea);
 
         // 메시지 입력 필드
-        t_input = new JTextField();
+        t_input_GAME = new JTextField();
         //t_input.setOpaque(false);
-        t_input.setBorder(border);
-        t_input.setBounds(15, 640, 220, 30);
-        panel.add(t_input);
+        t_input_GAME.setBorder(border);
+        t_input_GAME.setBounds(15, 640, 220, 30);
+        panel.add(t_input_GAME);
 
         // 메시지 보내기 버튼
-        b_send = new JButton();
+        b_send_GAME = new JButton();
         String sendImage = "/resources/send_button.png";
 
         // 이미지 로드 및 크기 조정
@@ -173,35 +172,36 @@ public class YachtDiceClient extends JFrame {
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
 
         // 버튼에 스케일된 이미지 설정
-        b_send.setIcon(scaledIcon);
+        b_send_GAME.setIcon(scaledIcon);
 
         // 버튼 크기 및 위치 설정
-        b_send.setBounds(235, 640, 30, 30);
-        b_send.setContentAreaFilled(false); // 배경 제거
+        b_send_GAME.setBounds(235, 640, 30, 30);
+        b_send_GAME.setContentAreaFilled(false); // 배경 제거
 
         // 패널에 추가
-        panel.add(b_send);
+        panel.add(b_send_GAME);
 
         // 엔터와 버튼 클릭으로 메시지 전송
-        b_send.addActionListener(new ActionListener() {
+        b_send_GAME.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String message = t_input.getText();
-                textArea.append(message + "\n");
-                t_input.setText("");
+                send_message_room(roomTitle_copy);
             }
         });
 
-        t_input.addActionListener(new ActionListener() {
+        t_input_GAME.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String message = t_input.getText();
-                textArea.append(message + "\n");
-                t_input.setText("");
+                send_message_room(roomTitle_copy);
             }
         });
 
         return panel;
+    }
+
+    private void printDisplay2(String msg){
+        textArea.append(msg+"\n");
+        textArea.setCaretPosition(textArea.getDocument().getLength());
     }
 
     private JPanel AddDiceComponents() {
@@ -435,13 +435,8 @@ public class YachtDiceClient extends JFrame {
 
     private void send_message_room(String roomTitle) {
         String roomtitle_temp = roomTitle;
-        send(new Yacht(t_userID.getText(), Yacht.MODE_TX_STRING_ROOM, roomtitle_temp, t_input_test.getText()));
-        t_input_test.setText("");
-    }
-
-    private void printDisplay2(String msg) {
-        t_display_test.append(msg + "\n");
-        t_display_test.setCaretPosition(t_display_test.getDocument().getLength());
+        send(new Yacht(t_userID.getText(), Yacht.MODE_TX_STRING_ROOM, roomtitle_temp, t_input_GAME.getText()));
+        t_input_GAME.setText("");
     }
 
     public YachtDiceClient(String serverAddress, int serverPort) {
@@ -628,7 +623,7 @@ public class YachtDiceClient extends JFrame {
                         case Yacht.MODE_TX_STRING_ROOM:
                             if (roomTitle_copy.equals(inMsg.roomTitle)) { // 입장한 방과 채팅을 친 방이 같다면
                                 // 만약 입장을 하지 않았으면 방 이름은 없을것이고 다른 방에 입장했다면 조건에 만족하지 않을 것임
-                                printDisplay2(inMsg.message);
+                                printDisplay2(inMsg.userID + ": " + inMsg.message);
                             }
                     }
                 } catch (IOException e) {

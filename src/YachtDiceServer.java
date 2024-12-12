@@ -245,7 +245,7 @@ public class YachtDiceServer extends JFrame {
                         refresh();
                     } else if (msg.mode == Yacht.MODE_TX_STRING_ROOM) {
                         String message = uid + "님의 채팅: " + msg.message;
-                        printDisplay(message); // 방에서 채팅하는거 보이게 하려면 활성화
+                        printDisplay(msg.roomTitle + "방 안의 " + message); // 방에서 채팅하는거 보이게 하려면 활성화
                         broadcasting(msg);
                     }
                 }
