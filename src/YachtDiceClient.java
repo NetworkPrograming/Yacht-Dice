@@ -22,6 +22,7 @@ public class YachtDiceClient extends JFrame {
     private JButton b_disconnect;
     private JButton b_exit;
 
+
     private JButton b_createRoom;
 
     private Socket socket;
@@ -51,18 +52,20 @@ public class YachtDiceClient extends JFrame {
     // 밑에는 게임창에 필요한 변수
 
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
-    private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpeg")).getImage();
+    private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpg")).getImage();
     private Image sendButton = new ImageIcon(getClass().getResource("/resources/send_button.png")).getImage();
 
     JButton giveUpButton = new JButton("Give Up");
-    JButton b_roll;
     JTextArea textArea = new JTextArea(10, 20);
     private JTextArea chatDisplay; // 채팅 메시지 표시 영역
     private JTextField t_input_GAME;  // 메시지 입력 필드
     private JButton b_send_GAME;    // 메시지 보내기 버튼
+    JButton b_dice;
 
     final static int DICE_SIZE = 5;
     final static int MAX_DICE_NUM = 6;
+
+    int checkRoll = 0; // 굴린 횟수 세기
 
     int[] dices;
     int[] counts;
@@ -74,9 +77,10 @@ public class YachtDiceClient extends JFrame {
         counts = new int[MAX_DICE_NUM];
 
         rand = new Random();
+        System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
 
         JFrame newFrame = new JFrame(roomTitle_copy);
-        newFrame.setSize(1400, 800);
+        newFrame.setSize(1400, 770);
         newFrame.setLocationRelativeTo(null); // 화면 중앙에 위치
         newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
 
@@ -86,22 +90,22 @@ public class YachtDiceClient extends JFrame {
 
         // 배경 패널을 레이어 0에 추가
         JPanel backgroundPanel = BackgroundPanel();
-        backgroundPanel.setBounds(0, 0, newFrame.getWidth(), newFrame.getHeight());
+        backgroundPanel.setBounds(50, 0, newFrame.getWidth(), newFrame.getHeight());
         layeredPane.add(backgroundPanel, Integer.valueOf(0)); // 레이어 0에 배경 추가
 
         // 점수 패널을 레이어 1에 추가
         JPanel scorePanel = ScorePanel();
-        scorePanel.setBounds(0, 0, 300, 750); // 점수판 크기 설정
+        scorePanel.setBounds(0, 0, 350, 750); // 점수판 크기 설정
         layeredPane.add(scorePanel, Integer.valueOf(1)); // 레이어 1에 점수판 추가
 
         // 채팅 패널을 레이어 2에 추가
         JPanel chatPanel = ChatPanel();
-        chatPanel.setBounds(1000, 0, 320, 760); // 채팅판 크기 설정
+        chatPanel.setBounds(1100, 0, 320, 760); // 채팅판 크기 설정
         layeredPane.add(chatPanel, Integer.valueOf(2)); // 레이어 2에 채팅판 추가
 
         // 주사위 패널을 레이어 10에 추가
         JPanel dicePanel = AddDiceComponents();
-        dicePanel.setBounds(330, 0, 700, 750);
+        dicePanel.setBounds(380, 0, 750, 750);
         layeredPane.add(dicePanel, Integer.valueOf(10)); // 레이어 10에 주사위 패널 추가
 
         AddDiceComponents();
@@ -135,7 +139,7 @@ public class YachtDiceClient extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(scoreBoard, 0, 0, 300, 750, this);
+                g.drawImage(scoreBoard, 0, 0, 350, 750, this);
             }
         };
         panel.setLayout(null);
@@ -150,16 +154,16 @@ public class YachtDiceClient extends JFrame {
         textArea.setEditable(false);
         //textArea.setOpaque(false);
         Border border = BorderFactory.createLineBorder(Color.darkGray, 2);
-        textArea.setBorder(border);
-        textArea.setBounds(15, 10, 250, 625);
+       //textArea.setBorder(border);
+        textArea.setBounds(15, 10, 250, 660);
         textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14)); // 폰트 설정
         panel.add(textArea);
 
         // 메시지 입력 필드
         t_input_GAME = new JTextField();
         //t_input.setOpaque(false);
-        t_input_GAME.setBorder(border);
-        t_input_GAME.setBounds(15, 640, 220, 30);
+        //t_input_GAME.setBorder(border);
+        t_input_GAME.setBounds(15, 670, 220, 30);
         panel.add(t_input_GAME);
 
         // 메시지 보내기 버튼
@@ -175,7 +179,7 @@ public class YachtDiceClient extends JFrame {
         b_send_GAME.setIcon(scaledIcon);
 
         // 버튼 크기 및 위치 설정
-        b_send_GAME.setBounds(235, 640, 30, 30);
+        b_send_GAME.setBounds(235, 670, 30, 30);
         b_send_GAME.setContentAreaFilled(false); // 배경 제거
 
         // 패널에 추가
@@ -206,6 +210,7 @@ public class YachtDiceClient extends JFrame {
 
     private JPanel AddDiceComponents() {
         JPanel jPanel = new JPanel();
+
         JButton[] b_dices = new JButton[DICE_SIZE];
         jPanel.setOpaque(false); // 패널을 투명하게 설정
         jPanel.setLayout(null);
@@ -222,7 +227,7 @@ public class YachtDiceClient extends JFrame {
         }
 
         // 굴리기 버튼
-        b_roll = new JButton();
+        JButton b_roll = new JButton();
         String rollImage = "/resources/roll_button.png";
 
         // 이미지 로드 및 크기 조정
@@ -237,7 +242,7 @@ public class YachtDiceClient extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 b_roll.setEnabled(false);
-
+                checkRoll++;
                 playSound("/resources/dice_roll.wav");
 
                 // 3초동안 굴리기
@@ -253,24 +258,64 @@ public class YachtDiceClient extends JFrame {
                                 for (int i = 0; i < DICE_SIZE; i++) { // 킵하지 않은게 있으면 랜덤값 생성 후 이미지 그림
                                     if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
                                         dices[i] = rand.nextInt(6) + 1;
+                                        // UI 업데이트 요청
                                         ImgService.updateImage(b_dices[i], "resources/dice" + dices[i] + ".png");
+                                        b_dices[i].setEnabled(false); // 굴리는 동안 주사위 클릭 금지
                                     }
                                 }
-
-                                jPanel.repaint();
-                                jPanel.revalidate();
+                                // UI 갱신 및 딜레이
+                                SwingUtilities.invokeLater(() -> {
+                                    jPanel.repaint();
+                                    jPanel.revalidate();
+                                });
 
                                 Thread.sleep(60);
-
                                 endTime = System.currentTimeMillis();
                             }
-                            b_roll.setEnabled(true);
+                            // 주사위 굴림 종료 후 버튼 활성화
+                            SwingUtilities.invokeLater(() -> {
+                                b_roll.setEnabled(true);
+                                for (JButton diceButton : b_dices) {
+                                    diceButton.setEnabled(true);
+                                }
+                            });
 
                             for (int i = 0; i < DICE_SIZE; i++) { // isSaved 값 출력
                                 System.out.println(dices[i] + " " + b_dices[i].getClientProperty("isSaved"));
                             }
 
-                            System.out.println(available()); // 족보 출력
+                            System.out.println(available() + checkRoll); // 족보 출력
+                            Thread.sleep(1000); //1초 대기
+
+
+                            ////
+                            boolean allTrue = true; // 모든 값이 true인지 확인하는 로직 -> 주사위 클릭했을 때로 이동
+                            for (int i = 0; i < DICE_SIZE; i++) {
+                                if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+                                    allTrue = false;
+                                    break;
+                                }
+                            }
+                            if (allTrue) { // 모두 isSaved 상태 되면 주사위,롤버튼 클릭 X
+                                b_roll.setEnabled(false);
+                                for (int i = 0; i < DICE_SIZE; i++){
+                                    b_dices[i].setEnabled(false);
+                                }
+                            }
+                            if(checkRoll==3){ // 3번 다 굴리면 isSaved 아닌 것들 다 isSaved로 바꾸고 위로 올림
+                                b_roll.setEnabled(false);
+                                for (int i = 0; i < DICE_SIZE; i++) {
+                                    b_dices[i].setEnabled(false);
+                                    if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+                                        b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130);
+                                        b_dices[i].putClientProperty("isSaved", true);  // 이동 상태 업데이트
+                                        repaint();
+                                    }
+                                }
+                            }
+
+
+                            ////
 
                         } catch (InterruptedException e) {
                             System.out.println("Threading Error: " + e);
@@ -321,6 +366,46 @@ public class YachtDiceClient extends JFrame {
         results += "]";
         return results;
     }
+
+//    private void startTurn(){ // 턴 시작
+//        b_roll.setEnabled(true);
+//        for (int i = 0; i < DICE_SIZE; i++){
+//            b_dices[i].setEnabled(true);
+//        }
+//    }
+
+//    private boolean isTurnEnded(){ //턴 끝났는지 확인
+//        boolean allTrue = true; // 모든 값이 true인지 확인하는 로직
+//        for (int i = 0; i < DICE_SIZE; i++) {
+//            if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+//                allTrue = false;
+//                break;
+//            }
+//        }
+//        if (allTrue) { // 모두 isSaved 상태 되면 주사위,롤버튼 클릭 X
+//            b_roll.setEnabled(false);
+//            for (int i = 0; i < DICE_SIZE; i++){
+//                b_dices[i].setEnabled(false);
+//            }
+//            return true;
+//        }
+//          if(checkRoll==3){ // 3번 다 굴리면 isSaved 아닌 것들 다 isSaved로 바꾸고 위로 올림
+//            b_roll.setEnabled(false);
+//            for (int i = 0; i < DICE_SIZE; i++) {
+//                    b_dices[i].setEnabled(false);
+//                if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+//                    b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130);
+//                    b_dices[i].putClientProperty("isSaved", true);  // 이동 상태 업데이트
+//                    repaint();
+//                }
+//            }
+//            return true; // 턴 종료
+//        }
+//        else return false;
+//        return false;
+//    }
+
+
 
     private void countDices() { //굴린 주사위 수 저장
         Arrays.fill(counts, 0); //count 0으로 초기화
@@ -407,6 +492,7 @@ public class YachtDiceClient extends JFrame {
                     repaint();
                 }
                 repaint();
+                //모두 isSaved인지 검사하고 맞으면 턴 종료
             }
         });
 
