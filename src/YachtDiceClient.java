@@ -68,20 +68,11 @@ public class YachtDiceClient extends JFrame {
     int[] dices;
     int[] counts;
 
-    boolean isAce = false;
-    boolean isDuel = false;
-    boolean isTriple = false;
-    boolean isQuad = false;
-    boolean isFenta = false;
-    boolean isHexa = false;
-    boolean isChoice = false;
-    boolean isPoker = false;
-    boolean isFullhouse = false;
-    boolean isSs = false;
-    boolean isLs = false;
-    boolean isYacht = false;
+
+    boolean[] isScored; //점수등록여부
 
     JLabel[] l_user1; //1번 유저가 사용하는 점수라벨모음
+    int[] myScore; //유저 점수
 
     int totalScore = 0; //총점
     int middleScore = 0; //에이스~헥사까지 점수
@@ -97,6 +88,8 @@ public class YachtDiceClient extends JFrame {
         dices = new int[DICE_SIZE];
         counts = new int[MAX_DICE_NUM];
         l_user1 = new JLabel[15];
+        myScore = new int[15];
+        isScored = new boolean[15];
 
         rand = new Random();
         System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
@@ -256,6 +249,11 @@ public class YachtDiceClient extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 라벨 클릭 시 로직
+                myScore[scoreIndex] = Integer.parseInt(label.getText()); //라벨에 적힌 점수 가져와서 내 점수로 저장
+                isScored[scoreIndex] = true; //저장한 라벨
+                label.setForeground(Color.BLACK); //검은색으로 변경
+                totalScore += myScore[scoreIndex]; //총점에 추가
+                scoreLabels[user][14].setText(String.valueOf(totalScore));
             }
         });
     }
@@ -487,7 +485,9 @@ public class YachtDiceClient extends JFrame {
         Arrays.fill(counts, 0); //counts 0으로 초기화
         for (int user = 0; user < 4; user++) { //라벨 초기화 (점수확정X인것만)
             for (int i = 0; i < scoreLabels[user].length; i++) { //라벨 초기화
-                scoreLabels[user][i].setText("");
+                if(!isScored[i]){
+                    scoreLabels[user][i].setText("");
+                }
             }
         }
         countDices();
@@ -502,8 +502,10 @@ public class YachtDiceClient extends JFrame {
             int diceValue = entry.getKey();
             int score = entry.getValue();
             if(score > 0){
-                scoreLabels[user1][diceValue-1].setText(String.valueOf(score));
-                scoreLabels[user1][diceValue-1].setForeground(Color.GRAY);
+                if(!isScored[diceValue-1]){
+                    scoreLabels[user1][diceValue-1].setText(String.valueOf(score));
+                    scoreLabels[user1][diceValue-1].setForeground(Color.GRAY);
+                }
             }
         }
 
@@ -511,7 +513,7 @@ public class YachtDiceClient extends JFrame {
         String results = "[";
 
         //족보 체크
-        if (checkNo1()) { // 포커 체크
+        if (checkNo1() && !isScored[9]) { // 포커 체크
             scoreLabels[user1][9].setText(String.valueOf(totalScore()));
             scoreLabels[user1][9].setForeground(Color.GRAY);
 
@@ -519,7 +521,7 @@ public class YachtDiceClient extends JFrame {
             hasResults = true;
         }
 
-        if (checkNo2()) { //풀하우스 체크
+        if (checkNo2() && !isScored[10]) { //풀하우스 체크
             scoreLabels[user1][10].setText(String.valueOf(totalScore()));
             scoreLabels[user1][10].setForeground(Color.GRAY);
 
@@ -527,7 +529,7 @@ public class YachtDiceClient extends JFrame {
             hasResults = true;
         }
 
-        if (checkNo3()) { //스몰 스트레이트 체크
+        if (checkNo3() && !isScored[11]) { //스몰 스트레이트 체크
             int score = 15;
             scoreLabels[user1][11].setText(String.valueOf(score));
             scoreLabels[user1][11].setForeground(Color.GRAY);
@@ -536,7 +538,7 @@ public class YachtDiceClient extends JFrame {
             hasResults = true;
         }
 
-        if (checkNo4()) {
+        if (checkNo4() && !isScored[12]) {
             int score = 30;
             scoreLabels[user1][12].setText(String.valueOf(score));
             scoreLabels[user1][12].setForeground(Color.GRAY);
@@ -545,7 +547,7 @@ public class YachtDiceClient extends JFrame {
             hasResults = true;
         }
 
-        if (checkNo5()) {
+        if (checkNo5() && !isScored[13]) {
             int score = 50;
             scoreLabels[user1][13].setText(String.valueOf(score));
             scoreLabels[user1][13].setForeground(Color.GRAY);
@@ -554,7 +556,7 @@ public class YachtDiceClient extends JFrame {
             hasResults = true;
         }
 
-        if (!isChoice) {
+        if (!isScored[8]) {
             scoreLabels[user1][8].setText(String.valueOf(totalScore()));
             scoreLabels[user1][8].setForeground(Color.GRAY);
 
