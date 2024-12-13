@@ -115,8 +115,8 @@ public class YachtDiceClient extends JFrame {
             @Override
             public void windowClosed(WindowEvent e) {
                 YachtDiceClient.this.setVisible(true); // 기존 창 다시 보이기
-                quit_room(roomTitle);
-                printDisplay(roomTitle + " 게임 방에서 퇴장하였습니다.");
+                quit_room(roomTitle_copy);
+                printDisplay(roomTitle_copy + " 게임 방에서 퇴장하였습니다.");
             }
         });
     }
@@ -583,7 +583,6 @@ public class YachtDiceClient extends JFrame {
     }
 
     private void enterRoom(String userIDID, String roomTitle, int flag, String password) {
-        String roomtitle_temp;
         roomTitle_copy = roomTitle;
         if (password != null) {
             String inputPassword = null;
@@ -604,19 +603,16 @@ public class YachtDiceClient extends JFrame {
                     }
 
                     // 비밀번호가 맞는 경우
-                    roomtitle_temp = roomTitle;
-                    send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomtitle_temp));
+                    send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomTitle_copy));
                     break;
                 } else if (flag == 0) {
-                    roomtitle_temp = roomTitle;
-                    send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomtitle_temp));
+                    send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomTitle_copy));
                     break;
                 }
             }
         } else {
             // 비밀번호가 필요 없는 경우
-            roomtitle_temp = roomTitle;
-            send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomtitle_temp));
+            send(new Yacht(uid, Yacht.MODE_ENTER_ROOM, roomTitle_copy));
         }
     }
 
