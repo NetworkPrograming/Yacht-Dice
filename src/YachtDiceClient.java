@@ -62,6 +62,8 @@ public class YachtDiceClient extends JFrame {
     private JButton b_send_GAME;    // 메시지 보내기 버튼
     JButton b_dice;
 
+    boolean allTrue;
+
     final static int DICE_SIZE = 5;
     final static int MAX_DICE_NUM = 6;
 
@@ -73,6 +75,7 @@ public class YachtDiceClient extends JFrame {
     Random rand;
 
     public void GameGUI() {
+
         dices = new int[DICE_SIZE];
         counts = new int[MAX_DICE_NUM];
 
@@ -108,8 +111,6 @@ public class YachtDiceClient extends JFrame {
         dicePanel.setBounds(430, 0, 750, 750);
         layeredPane.add(dicePanel, Integer.valueOf(10)); // 레이어 10에 주사위 패널 추가
 
-        AddDiceComponents();
-
         newFrame.setVisible(true); // 창을 보이도록 설정
         newFrame.addWindowListener(new WindowAdapter() {
             @Override
@@ -117,6 +118,7 @@ public class YachtDiceClient extends JFrame {
                 YachtDiceClient.this.setVisible(true); // 기존 창 다시 보이기
                 quit_room(roomTitle_copy);
                 printDisplay(roomTitle_copy + " 게임 방에서 퇴장하였습니다.");
+                checkRoll=0;
             }
         });
     }
@@ -209,127 +211,162 @@ public class YachtDiceClient extends JFrame {
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
 
+
     private JPanel AddDiceComponents() {
         JPanel jPanel = new JPanel();
-
         JButton[] b_dices = new JButton[DICE_SIZE];
         jPanel.setOpaque(false); // 패널을 투명하게 설정
         jPanel.setLayout(null);
+
+        // 주사위 초기값 설정
         Arrays.fill(dices, 1);
 
-        b_dices[0] = createDiceButton("resources/dice" + 1 + ".png", 110, 210);
-        b_dices[1] = createDiceButton("resources/dice" + 2 + ".png", 200, 210);
-        b_dices[2] = createDiceButton("resources/dice" + 3 + ".png", 295, 210);
-        b_dices[3] = createDiceButton("resources/dice" + 4 + ".png", 390, 210);
-        b_dices[4] = createDiceButton("resources/dice" + 5 + ".png", 490, 210);
-
-        for (int i = 0; i < DICE_SIZE; i++) { //주사위 버튼 만들기
+        // 주사위 버튼 생성 및 추가
+        for (int i = 0; i < DICE_SIZE; i++) {
+            int xPosition = 110 + (i * 90); // x 좌표 동적 설정
+            b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210);
+            b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
             jPanel.add(b_dices[i]);
+            b_dices[i].setVisible(true);
         }
 
-        // 굴리기 버튼
-        JButton b_roll = new JButton();
-        String rollImage = "/resources/roll_button.png";
-
-        // 이미지 로드 및 크기 조정
-        ImageIcon originalIcon = new ImageIcon(getClass().getResource(rollImage));
-        Image scaledImage = originalIcon.getImage().getScaledInstance(200, 110, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(scaledImage);
-        b_roll.setIcon(scaledIcon);
-        b_roll.setContentAreaFilled(false); // 배경 제거
-        b_roll.setBorderPainted(false);
-        b_roll.setBounds(230, 400, 200, 110);
-        b_roll.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                b_roll.setEnabled(false);
-                checkRoll++;
-                playSound("/resources/dice_roll.wav");
-
-                // 3초동안 굴리기
-                long startTime = System.currentTimeMillis();
-                Thread rollThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        long endTime = System.currentTimeMillis();
-                        try {
-                            while ((endTime - startTime) / 1000F < 2) {
-                                // 최종 값 결정 (2초 후)
-
-                                for (int i = 0; i < DICE_SIZE; i++) { // 킵하지 않은게 있으면 랜덤값 생성 후 이미지 그림
-                                    if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
-                                        dices[i] = rand.nextInt(6) + 1;
-                                        // UI 업데이트 요청
-                                        ImgService.updateImage(b_dices[i], "resources/dice" + dices[i] + ".png");
-                                        b_dices[i].setEnabled(false); // 굴리는 동안 주사위 클릭 금지
-                                    }
-                                }
-                                // UI 갱신 및 딜레이
-                                SwingUtilities.invokeLater(() -> {
-                                    jPanel.repaint();
-                                    jPanel.revalidate();
-                                });
-
-                                Thread.sleep(60);
-                                endTime = System.currentTimeMillis();
-                            }
-                            // 주사위 굴림 종료 후 버튼 활성화
-                            SwingUtilities.invokeLater(() -> {
-                                b_roll.setEnabled(true);
-                                for (JButton diceButton : b_dices) {
-                                    diceButton.setEnabled(true);
-                                }
-                            });
-
-                            for (int i = 0; i < DICE_SIZE; i++) { // isSaved 값 출력
-                                System.out.println(dices[i] + " " + b_dices[i].getClientProperty("isSaved"));
-                            }
-
-                            System.out.println(available() + checkRoll); // 족보 출력
-                            Thread.sleep(1000); //1초 대기
-
-
-                            ////
-                            boolean allTrue = true; // 모든 값이 true인지 확인하는 로직 -> 주사위 클릭했을 때로 이동
-                            for (int i = 0; i < DICE_SIZE; i++) {
-                                if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
-                                    allTrue = false;
-                                    break;
-                                }
-                            }
-                            if (allTrue) { // 모두 isSaved 상태 되면 주사위,롤버튼 클릭 X
-                                b_roll.setEnabled(false);
-                                for (int i = 0; i < DICE_SIZE; i++){
-                                    b_dices[i].setEnabled(false);
-                                }
-                            }
-                            if(checkRoll==3){ // 3번 다 굴리면 isSaved 아닌 것들 다 isSaved로 바꾸고 위로 올림
-                                b_roll.setEnabled(false);
-                                for (int i = 0; i < DICE_SIZE; i++) {
-                                    b_dices[i].setEnabled(false);
-                                    if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
-                                        b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130);
-                                        b_dices[i].putClientProperty("isSaved", true);  // 이동 상태 업데이트
-                                        repaint();
-                                    }
-                                }
-                            }
-
-
-                            ////
-
-                        } catch (InterruptedException e) {
-                            System.out.println("Threading Error: " + e);
-                        }
-                    }
-                });
-                rollThread.start();
-            }
-        });
+        // 굴리기 버튼 생성
+        JButton b_roll = createRollButton();
+        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel)); // 버튼 액션 연결
         jPanel.add(b_roll);
 
         return jPanel;
     }
+
+    private JButton createDiceButton(String imagePath, int x, int y) {
+        JButton button = ImgService.loadImage(imagePath);
+        button.setBounds(x, y, 80, 80);
+        //button.setContentAreaFilled(false); // 배경 제거
+        //button.setBorderPainted(false);    // 테두리 제거
+        button.putClientProperty("isSaved", false); // 저장 여부 초기화
+
+        button.addActionListener(e -> {
+            boolean isSaved = !(boolean) button.getClientProperty("isSaved");
+            button.putClientProperty("isSaved", isSaved); // 상태 토글
+            if (isSaved) {
+                button.setLocation(button.getX(), button.getY() - 130); // 저장 시 위치 변경
+            } else {
+                button.setLocation(button.getX(), button.getY() + 130); // 해제 시 원위치
+            }
+        });
+
+        return button;
+    }
+
+    private JButton createRollButton() {
+        JButton button = new JButton();
+        String rollImage = "/resources/roll_button.png";
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource(rollImage));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(200, 110, Image.SCALE_SMOOTH);
+        button.setIcon(new ImageIcon(scaledImage));
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setBounds(230, 400, 200, 110);
+
+        return button;
+    }
+
+    private void setupRollButton(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
+        boolean allSaved = checkIfAllSaved(b_dices); // 주사위 상태 확인
+
+        if (!allSaved) {
+            // 모든 주사위가 저장되지 않은 경우에만 리스너 추가
+            handleRollAction(b_roll, b_dices, jPanel);
+        } else {
+            b_roll.setEnabled(false); // 모든 주사위가 저장된 경우 버튼 비활성화
+            for (int i = 0; i < DICE_SIZE; i++){
+                b_dices[i].setEnabled(false);
+            }
+        }
+    }
+
+    private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
+        b_roll.setEnabled(false); // 굴리기 버튼 비활성화
+        checkRoll++;
+
+        // 주사위 버튼 비활성화
+        for (int i = 0; i < DICE_SIZE; i++) {
+            b_dices[i].setEnabled(false); // 주사위 버튼 비활성화
+        }
+
+        Timer timer = new Timer(60, null); // 60ms 간격으로 주사위 변경
+        long startTime = System.currentTimeMillis();
+
+        timer.addActionListener(e -> {
+            long elapsed = (System.currentTimeMillis() - startTime) / 1000; // 초 단위 경과 시간
+            if (elapsed >= 2) { // 2초 후 굴리기 종료
+                timer.stop();
+                finalizeRoll(b_roll, b_dices, jPanel);
+
+            } else {
+                for (int i = 0; i < DICE_SIZE; i++) {
+                    if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+                        dices[i] = rand.nextInt(6) + 1; // 1~6 랜덤 값
+                        ImgService.updateImage(b_dices[i], "resources/dice" + dices[i] + ".png");
+                    }
+
+                }
+            }
+        });
+
+        playSound("/resources/dice_roll.wav"); // 주사위 소리 재생
+        timer.start();
+    }
+
+    private boolean checkIfAllSaved(JButton[] b_dices) {
+        for (JButton diceButton : b_dices) {
+            if (!(boolean) diceButton.getClientProperty("isSaved")) {
+                return false; // 저장되지 않은 주사위가 있다면 false 반환
+            }
+        }
+        return true; // 모든 주사위가 저장된 경우 true 반환
+    }
+
+    private void finalizeRoll(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
+        b_roll.setEnabled(true); // 굴리기 버튼 활성화
+        boolean allSaved = true;
+        for (int i = 0; i < DICE_SIZE; i++) {
+            b_dices[i].setEnabled(true);
+        }
+        for (int i = 0; i < DICE_SIZE; i++) {
+            if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+                allSaved = false;
+            }
+        }
+
+        if (checkRoll == 3 || allSaved) {
+            b_roll.setEnabled(false); // 굴리기 버튼 비활성화
+            Timer timer = new Timer(1000, e -> {
+                for (int i = 0; i < DICE_SIZE; i++) {
+                    if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
+                        b_dices[i].putClientProperty("isSaved", true); // 모든 주사위 저장
+                        b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130); // 주사위 위치 이동
+                    }
+                    b_dices[i].setEnabled(false); // 버튼 비활성화
+                }
+            });
+            timer.setRepeats(false); // 1회만 실행되도록 설정
+            timer.start(); // 타이머 시작
+        }
+
+        for (int i = 0; i < DICE_SIZE; i++) { // isSaved 값 출력
+            System.out.println(dices[i] + " " + b_dices[i].getClientProperty("isSaved"));
+        }
+        System.out.println(available() + checkRoll); // 족보 출력
+
+        // UI 갱신
+        SwingUtilities.invokeLater(() -> {
+            jPanel.repaint();
+            jPanel.revalidate();
+        });
+    }
+
+
 
     private String available() {
         countDices();
@@ -374,39 +411,6 @@ public class YachtDiceClient extends JFrame {
 //            b_dices[i].setEnabled(true);
 //        }
 //    }
-
-//    private boolean isTurnEnded(){ //턴 끝났는지 확인
-//        boolean allTrue = true; // 모든 값이 true인지 확인하는 로직
-//        for (int i = 0; i < DICE_SIZE; i++) {
-//            if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
-//                allTrue = false;
-//                break;
-//            }
-//        }
-//        if (allTrue) { // 모두 isSaved 상태 되면 주사위,롤버튼 클릭 X
-//            b_roll.setEnabled(false);
-//            for (int i = 0; i < DICE_SIZE; i++){
-//                b_dices[i].setEnabled(false);
-//            }
-//            return true;
-//        }
-//          if(checkRoll==3){ // 3번 다 굴리면 isSaved 아닌 것들 다 isSaved로 바꾸고 위로 올림
-//            b_roll.setEnabled(false);
-//            for (int i = 0; i < DICE_SIZE; i++) {
-//                    b_dices[i].setEnabled(false);
-//                if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
-//                    b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130);
-//                    b_dices[i].putClientProperty("isSaved", true);  // 이동 상태 업데이트
-//                    repaint();
-//                }
-//            }
-//            return true; // 턴 종료
-//        }
-//        else return false;
-//        return false;
-//    }
-
-
 
     private void countDices() { //굴린 주사위 수 저장
         Arrays.fill(counts, 0); //count 0으로 초기화
@@ -465,39 +469,6 @@ public class YachtDiceClient extends JFrame {
                 check = true;
         }
         return check;
-    }
-
-    private JButton createDiceButton(String imagePath, int x, int y) {
-        JButton b_dice = ImgService.loadImage(imagePath);
-        b_dice.setBounds(x, y, 75, 75);
-
-        // "isSaved" 상태를 버튼에 저장 (기본값은 false)
-        b_dice.putClientProperty("isSaved", false);
-
-        // 클릭 시 특정 위치로 이동하도록 이벤트 추가
-        b_dice.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean isSaved = (boolean) b_dice.getClientProperty("isSaved");
-
-                if (!isSaved) { //false일 때
-                    // 이동
-                    b_dice.setLocation(b_dice.getX(), b_dice.getY() - 130); // 예시: 아래쪽으로 130px 이동
-                    b_dice.putClientProperty("isSaved", true);  // 이동 상태 업데이트
-                    repaint();
-                }
-                if (isSaved) {
-                    // 원래 위치로 돌아감
-                    b_dice.setLocation(b_dice.getX(), b_dice.getY() + 130);
-                    b_dice.putClientProperty("isSaved", false); // 이동 상태 업데이트
-                    repaint();
-                }
-                repaint();
-                //모두 isSaved인지 검사하고 맞으면 턴 종료
-            }
-        });
-
-        return b_dice;
     }
 
     private void playSound(String soundFile) {
