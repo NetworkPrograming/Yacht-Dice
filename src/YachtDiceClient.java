@@ -8,6 +8,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
@@ -72,12 +73,32 @@ public class YachtDiceClient extends JFrame {
     int[] dices;
     int[] counts;
 
+    boolean isAce = false;
+    boolean isDuel = false;
+    boolean isTriple = false;
+    boolean isQuad = false;
+    boolean isFenta = false;
+    boolean isHexa = false;
+    boolean isChoice = false;
+    boolean isPoker = false;
+    boolean isFullhouse = false;
+    boolean isSs = false;
+    boolean isLs = false;
+    boolean isYacht = false;
+
+    JLabel[] l_user1; //1번 유저가 사용하는 점수라벨모음
+
+    int totalScore = 0; //총점
+    int middleScore = 0; //에이스~헥사까지 점수
+    int bonusScore = 35;
+
     Random rand;
 
     public void GameGUI() {
 
         dices = new int[DICE_SIZE];
         counts = new int[MAX_DICE_NUM];
+        l_user1 = new JLabel[15];
 
         rand = new Random();
         System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
@@ -144,7 +165,75 @@ public class YachtDiceClient extends JFrame {
                 g.drawImage(scoreBoard, 0, 0, 400, 750, this);
             }
         };
+        panel.add(SetScorePanel());
         panel.setLayout(null);
+        return panel;
+    }
+
+    private JPanel SetScorePanel() {
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        panel.setBounds(0, 0, 400, 750);
+        panel.setLayout(null);
+        int user, i;
+        // 유저별 점수칸 관리 (4명의 유저, 각 15개의 점수칸)
+        JLabel[][] scoreLabels = new JLabel[4][15];
+
+        // 각 유저의 점수칸 레이블 초기화
+        for (user = 0; user < 4; user++) { //// 에이스 ~ 헥사
+            for (i = 0; i < 6; i++) {
+                scoreLabels[user][i] = new JLabel("B" + (i + 1));
+                // 점수칸 위치 설정
+                scoreLabels[user][i].setBounds(85 + (user * 65), 126 + (i * 37), 180, 60);
+                scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
+                panel.add(scoreLabels[user][i]);
+
+                // 각 레이블에 클릭 이벤트 리스너 추가
+                // addLabelClickListener(scoreLabels[user][i], user, i);
+            }
+        }
+
+            for(user = 0; user < 4; user++) { //// 윗부분 점수 합
+                scoreLabels[user][6] = new JLabel("추가");
+                scoreLabels[user][6].setBounds(70 + (user * 65), 342, 180, 60);
+                scoreLabels[user][6].setHorizontalAlignment(SwingConstants.CENTER);
+                scoreLabels[user][6].setForeground(Color.WHITE);
+                panel.add(scoreLabels[user][6]);
+            }
+
+            for(user = 0; user < 4; user++) { //0 또는 35
+                scoreLabels[user][7] = new JLabel("0");
+                scoreLabels[user][7].setBounds(85 + (user * 65), 375, 180, 60);
+                scoreLabels[user][7].setHorizontalAlignment(SwingConstants.CENTER);
+                scoreLabels[user][7].setForeground(Color.WHITE);
+                panel.add(scoreLabels[user][7]);
+            }
+
+            for(user = 0; user < 4; user++) { //초이스
+                scoreLabels[user][8] = new JLabel("c");
+                scoreLabels[user][8].setBounds(85 + (user * 65), 433, 180, 60);
+                scoreLabels[user][8].setHorizontalAlignment(SwingConstants.CENTER);
+                panel.add(scoreLabels[user][8]);
+            }
+
+            for(user = 0; user < 4; user++){ ////포커 ~ 요트
+                for (i = 9; i < 14; i++) {
+                    scoreLabels[user][i] = new JLabel("S" + (i + 1));
+                    // 점수칸 위치 설정
+                    scoreLabels[user][i].setBounds(85 + (user * 65), 480 + ((i-9) * 37), 180, 60);
+                    scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
+                    panel.add(scoreLabels[user][i]);
+                }
+            }
+
+            for(user = 0; user < 4; user++) { //총점
+                scoreLabels[user][14] = new JLabel("total");
+                scoreLabels[user][14].setBounds(85 + (user * 65), 680, 180, 60);
+                scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
+                scoreLabels[user][7].setForeground(Color.WHITE);
+                panel.add(scoreLabels[user][14]);
+            }
+
         return panel;
     }
 
@@ -366,7 +455,9 @@ public class YachtDiceClient extends JFrame {
         });
     }
 
-
+    private void setScore(int score){ //점수등록
+        totalScore += score;
+    }
 
     private String available() {
         countDices();
@@ -375,29 +466,56 @@ public class YachtDiceClient extends JFrame {
         boolean hasResults = false;
 
         // 초이스 선택 X일 시 초이스도 포함
-        if (checkNo1()) {
+        if (check1()){
+            results += "에이스 ";
+            hasResults = true;
+        }
+        else if (check2()){
+            results += "듀얼 ";
+            hasResults = true;
+        }
+        else if (check3()){
+            results += "트리플 ";
+            hasResults = true;
+        }
+        else if (check4()){
+            results += "쿼드 ";
+            hasResults = true;
+        }
+        else if (check5()){
+            results += "펜타 ";
+            hasResults = true;
+        }
+        else if (check6()){
+            results += "헥사 ";
+            hasResults = true;
+        }
+        else if (checkNo1()) {
             results += "포커 ";
             hasResults = true;
         }
-        if (checkNo2()) {
+        else if (checkNo2()) {
             results += "풀하우스 ";
             hasResults = true;
         }
-        if (checkNo3()) {
+        else if (checkNo3()) {
             results += "스몰 스트레이트 ";
             hasResults = true;
         }
-        if (checkNo4()) {
+        else if (checkNo4()) {
             results += "라지 스트레이트 ";
             hasResults = true;
         }
-        if (checkNo5()) {
+        else if (checkNo5()) {
             results += "요트 ";
             hasResults = true;
         }
+        else if (!isChoice){
+            results += "초이스 ";
+            hasResults = true;
+        }
 
-        // 어디에도 해당 안되면 -> 1~6 숫자 각각 더하기 칸
-        if (!hasResults) {
+        else { //어디에도 쓸게 없으면 빈 공간에 0을 써야함
             results += "해당 없음";
         }
 
@@ -470,6 +588,27 @@ public class YachtDiceClient extends JFrame {
         }
         return check;
     }
+
+    private boolean check1(){
+        return counts[0] >= 1; //1다이스가 1개이상이면
+    }
+    private boolean check2(){
+        return counts[1] >= 1; //1다이스가 1개이상이면
+    }
+    private boolean check3(){
+        return counts[2] >= 1; //1다이스가 1개이상이면
+    }
+    private boolean check4(){
+        return counts[3] >= 1; //1다이스가 1개이상이면
+    }
+    private boolean check5(){
+        return counts[4] >= 1; //1다이스가 1개이상이면
+    }
+    private boolean check6(){
+        return counts[5] >= 1; //1다이스가 1개이상이면
+    }
+
+
 
     private void playSound(String soundFile) {
         try {
