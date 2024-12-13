@@ -1,13 +1,12 @@
 import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class YachtDiceClient extends JFrame {
     private String serverAddress;
@@ -88,7 +87,10 @@ public class YachtDiceClient extends JFrame {
     int middleScore = 0; //에이스~헥사까지 점수
     int bonusScore = 35;
 
+    JLabel[][] scoreLabels;
+
     Random rand;
+    int user1 = 0;
 
     public void GameGUI() {
 
@@ -174,7 +176,7 @@ public class YachtDiceClient extends JFrame {
         panel.setLayout(null);
         int user, i;
         // 유저별 점수칸 관리 (4명의 유저, 각 15개의 점수칸)
-        JLabel[][] scoreLabels = new JLabel[4][15];
+        scoreLabels = new JLabel[4][15];
 
         // 각 유저의 점수칸 레이블 초기화
         for (user = 0; user < 4; user++) { //// 에이스 ~ 헥사
@@ -413,6 +415,7 @@ public class YachtDiceClient extends JFrame {
             if (elapsed >= 2) { // 2초 후 굴리기 종료
                 timer.stop();
                 finalizeRoll(b_roll, b_dices, jPanel);
+                available();
 
             } else {
                 for (int i = 0; i < DICE_SIZE; i++) {
@@ -468,7 +471,6 @@ public class YachtDiceClient extends JFrame {
         for (int i = 0; i < DICE_SIZE; i++) { // isSaved 값 출력
             System.out.println(dices[i] + " " + b_dices[i].getClientProperty("isSaved"));
         }
-        System.out.println(available() + checkRoll); // 족보 출력
 
         // UI 갱신
         SwingUtilities.invokeLater(() -> {
@@ -481,55 +483,91 @@ public class YachtDiceClient extends JFrame {
         totalScore += score;
     }
 
-    private String available() {
+    private void available() {
+        Arrays.fill(counts, 0); //counts 0으로 초기화
+        for (int user = 0; user < 4; user++) { //라벨 초기화 (점수확정X인것만)
+            for (int i = 0; i < scoreLabels[user].length; i++) { //라벨 초기화
+                scoreLabels[user][i].setText("");
+            }
+        }
         countDices();
-        String results = "[";
+        checkScore();
+    }
 
-        boolean hasResults = false;
+    private void checkScore(){
 
-        // 초이스 선택 X일 시 초이스도 포함
-        if (check1()) {
-            results += "에이스 ";
-            hasResults = true;
-        } else if (check2()) {
-            results += "듀얼 ";
-            hasResults = true;
-        } else if (check3()) {
-            results += "트리플 ";
-            hasResults = true;
-        } else if (check4()) {
-            results += "쿼드 ";
-            hasResults = true;
-        } else if (check5()) {
-            results += "펜타 ";
-            hasResults = true;
-        } else if (check6()) {
-            results += "헥사 ";
-            hasResults = true;
-        } else if (checkNo1()) {
-            results += "포커 ";
-            hasResults = true;
-        } else if (checkNo2()) {
-            results += "풀하우스 ";
-            hasResults = true;
-        } else if (checkNo3()) {
-            results += "스몰 스트레이트 ";
-            hasResults = true;
-        } else if (checkNo4()) {
-            results += "라지 스트레이트 ";
-            hasResults = true;
-        } else if (checkNo5()) {
-            results += "요트 ";
-            hasResults = true;
-        } else if (!isChoice) {
-            results += "초이스 ";
-            hasResults = true;
-        } else { //어디에도 쓸게 없으면 빈 공간에 0을 써야함
-            results += "해당 없음";
+        // 에이스 ~ 헥사까지 체크
+        Map<Integer, Integer> scores = calcScore();
+        for (Map.Entry<Integer, Integer> entry : scores.entrySet()) {
+            int diceValue = entry.getKey();
+            int score = entry.getValue();
+            if(score > 0){
+                scoreLabels[user1][diceValue-1].setText(String.valueOf(score));
+                scoreLabels[user1][diceValue-1].setForeground(Color.GRAY);
+            }
         }
 
+        boolean hasResults = false;
+        String results = "[";
+
+        //족보 체크
+        if (checkNo1()) { // 포커 체크
+            scoreLabels[user1][9].setText(String.valueOf(totalScore()));
+            scoreLabels[user1][9].setForeground(Color.GRAY);
+
+            results += "포커 ";
+            hasResults = true;
+        }
+
+        if (checkNo2()) { //풀하우스 체크
+            scoreLabels[user1][10].setText(String.valueOf(totalScore()));
+            scoreLabels[user1][10].setForeground(Color.GRAY);
+
+            results += "풀하우스 ";
+            hasResults = true;
+        }
+
+        if (checkNo3()) { //스몰 스트레이트 체크
+            int score = 15;
+            scoreLabels[user1][11].setText(String.valueOf(score));
+            scoreLabels[user1][11].setForeground(Color.GRAY);
+
+            results += "스몰 스트레이트 ";
+            hasResults = true;
+        }
+
+        if (checkNo4()) {
+            int score = 30;
+            scoreLabels[user1][12].setText(String.valueOf(score));
+            scoreLabels[user1][12].setForeground(Color.GRAY);
+
+            results += "라지 스트레이트 ";
+            hasResults = true;
+        }
+
+        if (checkNo5()) {
+            int score = 50;
+            scoreLabels[user1][13].setText(String.valueOf(score));
+            scoreLabels[user1][13].setForeground(Color.GRAY);
+
+            results += "요트 ";
+            hasResults = true;
+        }
+
+        if (!isChoice) {
+            scoreLabels[user1][8].setText(String.valueOf(totalScore()));
+            scoreLabels[user1][8].setForeground(Color.GRAY);
+
+            results += "초이스 ";
+            hasResults = true;
+        }
+        if (!hasResults) { //어디에도 쓸게 없으면 빈 공간에 0을 써야함
+            results += "빈공간에 0점 쓰기";
+        }
         results += "]";
-        return results;
+
+        System.out.println(results + checkRoll);
+
     }
 
 //    private void startTurn(){ // 턴 시작
@@ -598,28 +636,22 @@ public class YachtDiceClient extends JFrame {
         return check;
     }
 
-    private boolean check1() {
-        return counts[0] >= 1; //1다이스가 1개이상이면
+    private Map<Integer, Integer> calcScore() {
+        Map<Integer, Integer> basicScore = new HashMap<>();
+        for (int i = 0; i < counts.length; i++) {
+            if (counts[i] > 0) { // 주사위 값이 하나 이상 나온 경우
+                int diceValue = i + 1; // 주사위 값 (1 ~ 6)
+                int score = counts[i] * diceValue; // 점수
+                basicScore.put(diceValue, score); // Map에 주사위 값, 점수 저장
+            }
+        }
+        return basicScore;
     }
 
-    private boolean check2() {
-        return counts[1] >= 1; //1다이스가 1개이상이면
-    }
-
-    private boolean check3() {
-        return counts[2] >= 1; //1다이스가 1개이상이면
-    }
-
-    private boolean check4() {
-        return counts[3] >= 1; //1다이스가 1개이상이면
-    }
-
-    private boolean check5() {
-        return counts[4] >= 1; //1다이스가 1개이상이면
-    }
-
-    private boolean check6() {
-        return counts[5] >= 1; //1다이스가 1개이상이면
+    private int totalScore(){
+        int total = 0;
+        total = Arrays.stream(dices).sum(); // 나온 값 전부 더함
+        return total;
     }
 
 
