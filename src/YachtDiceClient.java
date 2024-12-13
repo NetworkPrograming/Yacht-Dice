@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
@@ -136,9 +135,10 @@ public class YachtDiceClient extends JFrame {
                 YachtDiceClient.this.setVisible(true); // 기존 창 다시 보이기
                 quit_room(roomTitle_copy);
                 printDisplay(roomTitle_copy + " 게임 방에서 퇴장하였습니다.");
-                checkRoll=0;
+                checkRoll = 0;
             }
         });
+        send_message_room_first(roomTitle_copy, uid + "님이 입장했습니다.");
     }
 
     private JPanel BackgroundPanel() {
@@ -185,66 +185,66 @@ public class YachtDiceClient extends JFrame {
                 scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
                 panel.add(scoreLabels[user][i]);
 
-                 //클릭 이벤트 리스너 추가
-                 addLabelClickListener(scoreLabels[user][i], user, i);
+                //클릭 이벤트 리스너 추가
+                addLabelClickListener(scoreLabels[user][i], user, i);
             }
         }
 
-            for(user = 0; user < 4; user++) { //// 윗부분 점수 합
-                scoreLabels[user][6] = new JLabel("추가");
-                scoreLabels[user][6].setBounds(70 + (user * 65), 342, 180, 60);
-                scoreLabels[user][6].setHorizontalAlignment(SwingConstants.CENTER);
-                scoreLabels[user][6].setForeground(Color.WHITE);
-                panel.add(scoreLabels[user][6]);
+        for (user = 0; user < 4; user++) { //// 윗부분 점수 합
+            scoreLabels[user][6] = new JLabel("추가");
+            scoreLabels[user][6].setBounds(70 + (user * 65), 342, 180, 60);
+            scoreLabels[user][6].setHorizontalAlignment(SwingConstants.CENTER);
+            scoreLabels[user][6].setForeground(Color.WHITE);
+            panel.add(scoreLabels[user][6]);
+
+            //클릭 이벤트 리스너 추가
+            addLabelClickListener(scoreLabels[user][6], user, 6);
+        }
+
+        for (user = 0; user < 4; user++) { //0 또는 35
+            scoreLabels[user][7] = new JLabel("0");
+            scoreLabels[user][7].setBounds(85 + (user * 65), 375, 180, 60);
+            scoreLabels[user][7].setHorizontalAlignment(SwingConstants.CENTER);
+            scoreLabels[user][7].setForeground(Color.WHITE);
+            panel.add(scoreLabels[user][7]);
+
+            //클릭 이벤트 리스너 추가
+            addLabelClickListener(scoreLabels[user][7], user, 7);
+        }
+
+        for (user = 0; user < 4; user++) { //초이스
+            scoreLabels[user][8] = new JLabel("c");
+            scoreLabels[user][8].setBounds(85 + (user * 65), 433, 180, 60);
+            scoreLabels[user][8].setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(scoreLabels[user][8]);
+
+            //클릭 이벤트 리스너 추가
+            addLabelClickListener(scoreLabels[user][8], user, 8);
+        }
+
+        for (user = 0; user < 4; user++) { ////포커 ~ 요트
+            for (i = 9; i < 14; i++) {
+                scoreLabels[user][i] = new JLabel("S" + (i + 1));
+                // 점수칸 위치 설정
+                scoreLabels[user][i].setBounds(85 + (user * 65), 480 + ((i - 9) * 37), 180, 60);
+                scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
+                panel.add(scoreLabels[user][i]);
 
                 //클릭 이벤트 리스너 추가
-                addLabelClickListener(scoreLabels[user][6], user, 6);
+                addLabelClickListener(scoreLabels[user][i], user, i);
             }
+        }
 
-            for(user = 0; user < 4; user++) { //0 또는 35
-                scoreLabels[user][7] = new JLabel("0");
-                scoreLabels[user][7].setBounds(85 + (user * 65), 375, 180, 60);
-                scoreLabels[user][7].setHorizontalAlignment(SwingConstants.CENTER);
-                scoreLabels[user][7].setForeground(Color.WHITE);
-                panel.add(scoreLabels[user][7]);
+        for (user = 0; user < 4; user++) { //총점
+            scoreLabels[user][14] = new JLabel("total");
+            scoreLabels[user][14].setBounds(85 + (user * 65), 680, 180, 60);
+            scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
+            scoreLabels[user][7].setForeground(Color.WHITE);
+            panel.add(scoreLabels[user][14]);
 
-                //클릭 이벤트 리스너 추가
-                addLabelClickListener(scoreLabels[user][7], user, 7);
-            }
-
-            for(user = 0; user < 4; user++) { //초이스
-                scoreLabels[user][8] = new JLabel("c");
-                scoreLabels[user][8].setBounds(85 + (user * 65), 433, 180, 60);
-                scoreLabels[user][8].setHorizontalAlignment(SwingConstants.CENTER);
-                panel.add(scoreLabels[user][8]);
-
-                //클릭 이벤트 리스너 추가
-                addLabelClickListener(scoreLabels[user][8], user, 8);
-            }
-
-            for(user = 0; user < 4; user++){ ////포커 ~ 요트
-                for (i = 9; i < 14; i++) {
-                    scoreLabels[user][i] = new JLabel("S" + (i + 1));
-                    // 점수칸 위치 설정
-                    scoreLabels[user][i].setBounds(85 + (user * 65), 480 + ((i-9) * 37), 180, 60);
-                    scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
-                    panel.add(scoreLabels[user][i]);
-
-                    //클릭 이벤트 리스너 추가
-                    addLabelClickListener(scoreLabels[user][i], user, i);
-                }
-            }
-
-            for(user = 0; user < 4; user++) { //총점
-                scoreLabels[user][14] = new JLabel("total");
-                scoreLabels[user][14].setBounds(85 + (user * 65), 680, 180, 60);
-                scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
-                scoreLabels[user][7].setForeground(Color.WHITE);
-                panel.add(scoreLabels[user][14]);
-
-                //클릭 이벤트 리스너 추가
-                addLabelClickListener(scoreLabels[user][14], user, 14);
-            }
+            //클릭 이벤트 리스너 추가
+            addLabelClickListener(scoreLabels[user][14], user, 14);
+        }
 
         return panel;
     }
@@ -267,7 +267,7 @@ public class YachtDiceClient extends JFrame {
         textArea.setEditable(false);
         //textArea.setOpaque(false);
         Border border = BorderFactory.createLineBorder(Color.darkGray, 2);
-       //textArea.setBorder(border);
+        //textArea.setBorder(border);
         textArea.setBounds(15, 10, 300, 660);
         textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14)); // 폰트 설정
         panel.add(textArea);
@@ -317,8 +317,8 @@ public class YachtDiceClient extends JFrame {
         return panel;
     }
 
-    private void printDisplay2(String msg){
-        textArea.append(msg+"\n");
+    private void printDisplay2(String msg) {
+        textArea.append(msg + "\n");
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
 
@@ -390,7 +390,7 @@ public class YachtDiceClient extends JFrame {
             handleRollAction(b_roll, b_dices, jPanel);
         } else {
             b_roll.setEnabled(false); // 모든 주사위가 저장된 경우 버튼 비활성화
-            for (int i = 0; i < DICE_SIZE; i++){
+            for (int i = 0; i < DICE_SIZE; i++) {
                 b_dices[i].setEnabled(false);
             }
         }
@@ -477,7 +477,7 @@ public class YachtDiceClient extends JFrame {
         });
     }
 
-    private void setScore(int score){ //점수등록
+    private void setScore(int score) { //점수등록
         totalScore += score;
     }
 
@@ -488,56 +488,43 @@ public class YachtDiceClient extends JFrame {
         boolean hasResults = false;
 
         // 초이스 선택 X일 시 초이스도 포함
-        if (check1()){
+        if (check1()) {
             results += "에이스 ";
             hasResults = true;
-        }
-        else if (check2()){
+        } else if (check2()) {
             results += "듀얼 ";
             hasResults = true;
-        }
-        else if (check3()){
+        } else if (check3()) {
             results += "트리플 ";
             hasResults = true;
-        }
-        else if (check4()){
+        } else if (check4()) {
             results += "쿼드 ";
             hasResults = true;
-        }
-        else if (check5()){
+        } else if (check5()) {
             results += "펜타 ";
             hasResults = true;
-        }
-        else if (check6()){
+        } else if (check6()) {
             results += "헥사 ";
             hasResults = true;
-        }
-        else if (checkNo1()) {
+        } else if (checkNo1()) {
             results += "포커 ";
             hasResults = true;
-        }
-        else if (checkNo2()) {
+        } else if (checkNo2()) {
             results += "풀하우스 ";
             hasResults = true;
-        }
-        else if (checkNo3()) {
+        } else if (checkNo3()) {
             results += "스몰 스트레이트 ";
             hasResults = true;
-        }
-        else if (checkNo4()) {
+        } else if (checkNo4()) {
             results += "라지 스트레이트 ";
             hasResults = true;
-        }
-        else if (checkNo5()) {
+        } else if (checkNo5()) {
             results += "요트 ";
             hasResults = true;
-        }
-        else if (!isChoice){
+        } else if (!isChoice) {
             results += "초이스 ";
             hasResults = true;
-        }
-
-        else { //어디에도 쓸게 없으면 빈 공간에 0을 써야함
+        } else { //어디에도 쓸게 없으면 빈 공간에 0을 써야함
             results += "해당 없음";
         }
 
@@ -611,25 +598,29 @@ public class YachtDiceClient extends JFrame {
         return check;
     }
 
-    private boolean check1(){
+    private boolean check1() {
         return counts[0] >= 1; //1다이스가 1개이상이면
     }
-    private boolean check2(){
+
+    private boolean check2() {
         return counts[1] >= 1; //1다이스가 1개이상이면
     }
-    private boolean check3(){
+
+    private boolean check3() {
         return counts[2] >= 1; //1다이스가 1개이상이면
     }
-    private boolean check4(){
+
+    private boolean check4() {
         return counts[3] >= 1; //1다이스가 1개이상이면
     }
-    private boolean check5(){
+
+    private boolean check5() {
         return counts[4] >= 1; //1다이스가 1개이상이면
     }
-    private boolean check6(){
+
+    private boolean check6() {
         return counts[5] >= 1; //1다이스가 1개이상이면
     }
-
 
 
     private void playSound(String soundFile) {
@@ -653,9 +644,20 @@ public class YachtDiceClient extends JFrame {
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private void send_message_room(String roomTitle) {
-        String roomtitle_temp = roomTitle;
-        send(new Yacht(t_userID.getText(), Yacht.MODE_TX_STRING_ROOM, roomtitle_temp, t_input_GAME.getText()));
-        t_input_GAME.setText("");
+        String message_temp = t_input_GAME.getText().trim();
+
+        if (message_temp.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "공백으로 이루어진 채팅을 칠 수 없습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+            t_input_GAME.setText("");
+        } else {
+            send(new Yacht(t_userID.getText(), Yacht.MODE_TX_STRING_ROOM, roomTitle, message_temp));
+            t_input_GAME.setText("");
+        }
+
+    }
+
+    private void send_message_room_first(String roomTitle, String message) {
+        send(new Yacht(t_userID.getText(), Yacht.MODE_TX_STRING_ROOM_FIRST, roomTitle, message));
     }
 
     public YachtDiceClient(String serverAddress, int serverPort) {
@@ -752,6 +754,7 @@ public class YachtDiceClient extends JFrame {
     private void quit_room(String roomTitle) {
         String roomtitle_temp = roomTitle;
         send(new Yacht(t_userID.getText(), Yacht.MODE_QUIT_ROOM, roomtitle_temp));
+        send_message_room_first(roomTitle, uid + "님이 퇴장했습니다.");
     }
 
     private void connectToServer() throws UnknownHostException, IOException {
@@ -840,6 +843,13 @@ public class YachtDiceClient extends JFrame {
                                 // 만약 입장을 하지 않았으면 방 이름은 없을것이고 다른 방에 입장했다면 조건에 만족하지 않을 것임
                                 printDisplay2(inMsg.userID + ": " + inMsg.message);
                             }
+                            break;
+                        case Yacht.MODE_TX_STRING_ROOM_FIRST:
+                            if (roomTitle_copy.equals(inMsg.roomTitle)) {
+                                // 방에 입장과 퇴장할때 채팅 뿌리기
+                                printDisplay2(inMsg.message);
+                            }
+                            break;
                     }
                 } catch (IOException e) {
                     printDisplay("연결을 종료했습니다.");
