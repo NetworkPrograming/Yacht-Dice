@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.*;
 import java.util.List;
@@ -246,6 +244,8 @@ public class YachtDiceServer extends JFrame {
                     } else if (msg.mode == Yacht.MODE_TX_STRING_ROOM) {
                         String message = uid + "님의 채팅: " + msg.message;
                         printDisplay(msg.roomTitle + "방 안의 " + message); // 방에서 채팅하는거 보이게 하려면 활성화
+                        broadcasting(msg);
+                    } else if (msg.mode == Yacht.MODE_TX_STRING_ROOM_FIRST) {
                         broadcasting(msg);
                     }
                 }
