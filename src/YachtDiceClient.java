@@ -2,10 +2,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -188,8 +185,8 @@ public class YachtDiceClient extends JFrame {
                 scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
                 panel.add(scoreLabels[user][i]);
 
-                // 각 레이블에 클릭 이벤트 리스너 추가
-                // addLabelClickListener(scoreLabels[user][i], user, i);
+                 //클릭 이벤트 리스너 추가
+                 addLabelClickListener(scoreLabels[user][i], user, i);
             }
         }
 
@@ -199,6 +196,9 @@ public class YachtDiceClient extends JFrame {
                 scoreLabels[user][6].setHorizontalAlignment(SwingConstants.CENTER);
                 scoreLabels[user][6].setForeground(Color.WHITE);
                 panel.add(scoreLabels[user][6]);
+
+                //클릭 이벤트 리스너 추가
+                addLabelClickListener(scoreLabels[user][6], user, 6);
             }
 
             for(user = 0; user < 4; user++) { //0 또는 35
@@ -207,6 +207,9 @@ public class YachtDiceClient extends JFrame {
                 scoreLabels[user][7].setHorizontalAlignment(SwingConstants.CENTER);
                 scoreLabels[user][7].setForeground(Color.WHITE);
                 panel.add(scoreLabels[user][7]);
+
+                //클릭 이벤트 리스너 추가
+                addLabelClickListener(scoreLabels[user][7], user, 7);
             }
 
             for(user = 0; user < 4; user++) { //초이스
@@ -214,6 +217,9 @@ public class YachtDiceClient extends JFrame {
                 scoreLabels[user][8].setBounds(85 + (user * 65), 433, 180, 60);
                 scoreLabels[user][8].setHorizontalAlignment(SwingConstants.CENTER);
                 panel.add(scoreLabels[user][8]);
+
+                //클릭 이벤트 리스너 추가
+                addLabelClickListener(scoreLabels[user][8], user, 8);
             }
 
             for(user = 0; user < 4; user++){ ////포커 ~ 요트
@@ -223,6 +229,9 @@ public class YachtDiceClient extends JFrame {
                     scoreLabels[user][i].setBounds(85 + (user * 65), 480 + ((i-9) * 37), 180, 60);
                     scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
                     panel.add(scoreLabels[user][i]);
+
+                    //클릭 이벤트 리스너 추가
+                    addLabelClickListener(scoreLabels[user][i], user, i);
                 }
             }
 
@@ -232,10 +241,23 @@ public class YachtDiceClient extends JFrame {
                 scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
                 scoreLabels[user][7].setForeground(Color.WHITE);
                 panel.add(scoreLabels[user][14]);
+
+                //클릭 이벤트 리스너 추가
+                addLabelClickListener(scoreLabels[user][14], user, 14);
             }
 
         return panel;
     }
+
+    private void addLabelClickListener(JLabel label, int user, int scoreIndex) {
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // 라벨 클릭 시 로직
+            }
+        });
+    }
+
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
