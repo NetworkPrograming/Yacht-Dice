@@ -80,7 +80,7 @@ public class YachtDiceClient extends JFrame {
         System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
 
         JFrame newFrame = new JFrame(roomTitle_copy);
-        newFrame.setSize(1400, 770);
+        newFrame.setSize(1450, 770);
         newFrame.setLocationRelativeTo(null); // 화면 중앙에 위치
         newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
 
@@ -95,17 +95,17 @@ public class YachtDiceClient extends JFrame {
 
         // 점수 패널을 레이어 1에 추가
         JPanel scorePanel = ScorePanel();
-        scorePanel.setBounds(0, 0, 350, 750); // 점수판 크기 설정
+        scorePanel.setBounds(0, 0, 400, 750); // 점수판 크기 설정
         layeredPane.add(scorePanel, Integer.valueOf(1)); // 레이어 1에 점수판 추가
 
         // 채팅 패널을 레이어 2에 추가
         JPanel chatPanel = ChatPanel();
-        chatPanel.setBounds(1100, 0, 320, 760); // 채팅판 크기 설정
+        chatPanel.setBounds(1120, 0, 320, 760); // 채팅판 크기 설정
         layeredPane.add(chatPanel, Integer.valueOf(2)); // 레이어 2에 채팅판 추가
 
         // 주사위 패널을 레이어 10에 추가
         JPanel dicePanel = AddDiceComponents();
-        dicePanel.setBounds(380, 0, 750, 750);
+        dicePanel.setBounds(430, 0, 750, 750);
         layeredPane.add(dicePanel, Integer.valueOf(10)); // 레이어 10에 주사위 패널 추가
 
         AddDiceComponents();
@@ -126,7 +126,7 @@ public class YachtDiceClient extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(backgroundImage, 300, 0, 1200, 750, this);
+                g.drawImage(backgroundImage, 350, 0, 1200, 750, this);
             }
         };
         panel.setLayout(null);
@@ -139,7 +139,7 @@ public class YachtDiceClient extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(scoreBoard, 0, 0, 350, 750, this);
+                g.drawImage(scoreBoard, 0, 0, 400, 750, this);
             }
         };
         panel.setLayout(null);
@@ -155,20 +155,21 @@ public class YachtDiceClient extends JFrame {
         //textArea.setOpaque(false);
         Border border = BorderFactory.createLineBorder(Color.darkGray, 2);
        //textArea.setBorder(border);
-        textArea.setBounds(15, 10, 250, 660);
+        textArea.setBounds(15, 10, 300, 660);
         textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14)); // 폰트 설정
         panel.add(textArea);
 
         // 메시지 입력 필드
         t_input_GAME = new JTextField();
         //t_input.setOpaque(false);
-        //t_input_GAME.setBorder(border);
-        t_input_GAME.setBounds(15, 670, 220, 30);
+        t_input_GAME.setBorder(border);
+        t_input_GAME.setBounds(14, 670, 275, 27);
         panel.add(t_input_GAME);
 
         // 메시지 보내기 버튼
         b_send_GAME = new JButton();
         String sendImage = "/resources/send_button.png";
+        b_send_GAME.setBorder(border);
 
         // 이미지 로드 및 크기 조정
         ImageIcon originalIcon = new ImageIcon(getClass().getResource(sendImage));
@@ -179,7 +180,7 @@ public class YachtDiceClient extends JFrame {
         b_send_GAME.setIcon(scaledIcon);
 
         // 버튼 크기 및 위치 설정
-        b_send_GAME.setBounds(235, 670, 30, 30);
+        b_send_GAME.setBounds(285, 670, 29, 27);
         b_send_GAME.setContentAreaFilled(false); // 배경 제거
 
         // 패널에 추가
