@@ -71,16 +71,19 @@ public class YachtDiceClient extends JFrame {
     int[] counts;
 
 
-    boolean[] isScored; //점수등록여부
+    boolean[][] isScored; //점수등록여부
 
-    JLabel[] l_user1; //1번 유저가 사용하는 점수라벨모음
-    int[] myScore; //유저 점수
+    int[] userList; //유저리스트
+    int[][] userScore; //유저 점수
+    int userNum;
+    String[] userName;
 
-    int totalScore = 0; //총점
-    int middleScore = 0; //에이스~헥사까지 점수
+    int[] totalScore; //총점
+    int[] middleScore; //에이스~헥사까지 점수
     int bonusScore = 35;
 
     JLabel[][] scoreLabels;
+    JLabel[] userLabels;
 
     Random rand;
     int user1 = 0;
@@ -89,11 +92,26 @@ public class YachtDiceClient extends JFrame {
 
         dices = new int[DICE_SIZE];
         counts = new int[MAX_DICE_NUM];
-        l_user1 = new JLabel[15];
-        myScore = new int[15];
-        isScored = new boolean[15];
+        userList = new int[4];
+        userScore = new int[4][15];
+        isScored = new boolean[4][15];
+        totalScore = new int[4];
+        middleScore = new int[4];
 
         rand = new Random();
+
+        userNum = 0; //유저 들어온 순서대로.. 0 1 2 3
+        String currentUser = uid;
+        System.out.println("Current User: " + currentUser);
+        for (int i = 0; i < User_Array_client.length; i++) {
+            if (currentUser.equals(User_Array_client[i])) {
+                userNum = i;
+                break; // 유저를 찾으면 더 이상 탐색하지 않음
+            }
+        }
+
+        userName = new String[4];
+
         System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
 
         JFrame newFrame = new JFrame(roomTitle_copy);
@@ -121,7 +139,7 @@ public class YachtDiceClient extends JFrame {
         layeredPane.add(chatPanel, Integer.valueOf(2)); // 레이어 2에 채팅판 추가
 
         // 주사위 패널을 레이어 10에 추가
-        JPanel dicePanel = AddDiceComponents();
+        JPanel dicePanel = AddDiceComponents(userNum);
         dicePanel.setBounds(430, 0, 750, 750);
         layeredPane.add(dicePanel, Integer.valueOf(10)); // 레이어 10에 주사위 패널 추가
 
@@ -136,6 +154,7 @@ public class YachtDiceClient extends JFrame {
             }
         });
         send_message_room_first(roomTitle_copy, uid + "님이 입장했습니다.");
+
     }
 
     private JPanel BackgroundPanel() {
@@ -172,11 +191,19 @@ public class YachtDiceClient extends JFrame {
         int user, i;
         // 유저별 점수칸 관리 (4명의 유저, 각 15개의 점수칸)
         scoreLabels = new JLabel[4][15];
+        userLabels = new JLabel[4];
+
+        for (user = 0; user < 4; user++) {
+            userLabels[user] = new JLabel();
+            userLabels[user].setBounds(85 + (user * 65), 50, 180, 60);
+            userLabels[user].setHorizontalAlignment(SwingConstants.CENTER);
+            panel.add(userLabels[user]);
+        }
 
         // 각 유저의 점수칸 레이블 초기화
         for (user = 0; user < 4; user++) { //// 에이스 ~ 헥사
             for (i = 0; i < 6; i++) {
-                scoreLabels[user][i] = new JLabel("B" + (i + 1));
+                scoreLabels[user][i] = new JLabel();
                 // 점수칸 위치 설정
                 scoreLabels[user][i].setBounds(85 + (user * 65), 126 + (i * 37), 180, 60);
                 scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
@@ -188,7 +215,7 @@ public class YachtDiceClient extends JFrame {
         }
 
         for (user = 0; user < 4; user++) { //// 윗부분 점수 합
-            scoreLabels[user][6] = new JLabel("추가");
+            scoreLabels[user][6] = new JLabel();
             scoreLabels[user][6].setBounds(70 + (user * 65), 342, 180, 60);
             scoreLabels[user][6].setHorizontalAlignment(SwingConstants.CENTER);
             scoreLabels[user][6].setForeground(Color.WHITE);
@@ -199,7 +226,7 @@ public class YachtDiceClient extends JFrame {
         }
 
         for (user = 0; user < 4; user++) { //0 또는 35
-            scoreLabels[user][7] = new JLabel("0");
+            scoreLabels[user][7] = new JLabel();
             scoreLabels[user][7].setBounds(85 + (user * 65), 375, 180, 60);
             scoreLabels[user][7].setHorizontalAlignment(SwingConstants.CENTER);
             scoreLabels[user][7].setForeground(Color.WHITE);
@@ -210,7 +237,7 @@ public class YachtDiceClient extends JFrame {
         }
 
         for (user = 0; user < 4; user++) { //초이스
-            scoreLabels[user][8] = new JLabel("c");
+            scoreLabels[user][8] = new JLabel();
             scoreLabels[user][8].setBounds(85 + (user * 65), 433, 180, 60);
             scoreLabels[user][8].setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(scoreLabels[user][8]);
@@ -221,7 +248,7 @@ public class YachtDiceClient extends JFrame {
 
         for (user = 0; user < 4; user++) { ////포커 ~ 요트
             for (i = 9; i < 14; i++) {
-                scoreLabels[user][i] = new JLabel("S" + (i + 1));
+                scoreLabels[user][i] = new JLabel();
                 // 점수칸 위치 설정
                 scoreLabels[user][i].setBounds(85 + (user * 65), 480 + ((i - 9) * 37), 180, 60);
                 scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
@@ -233,7 +260,7 @@ public class YachtDiceClient extends JFrame {
         }
 
         for (user = 0; user < 4; user++) { //총점
-            scoreLabels[user][14] = new JLabel("total");
+            scoreLabels[user][14] = new JLabel();
             scoreLabels[user][14].setBounds(85 + (user * 65), 680, 180, 60);
             scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
             scoreLabels[user][7].setForeground(Color.WHITE);
@@ -250,12 +277,34 @@ public class YachtDiceClient extends JFrame {
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // 라벨 클릭 시 로직
-                myScore[scoreIndex] = Integer.parseInt(label.getText()); //라벨에 적힌 점수 가져와서 내 점수로 저장
-                isScored[scoreIndex] = true; //저장한 라벨
-                label.setForeground(Color.BLACK); //검은색으로 변경
-                totalScore += myScore[scoreIndex]; //총점에 추가
-                scoreLabels[user][14].setText(String.valueOf(totalScore));
+                // 클릭된 라벨을 가져오기
+                String text = label.getText().trim(); // 공백 제거
+
+                // 디버깅: 텍스트 값 확인
+                System.out.println("Label Text: '" + text + "'");
+
+                try {
+                    // 텍스트가 비어 있거나 숫자가 아니면 예외 발생
+                    if (text.isEmpty()) {
+                        throw new NumberFormatException("Text is empty.");
+                    }
+
+                    // 정수로 변환
+                    int score = Integer.parseInt(text);
+
+                    // 점수 저장
+                    userScore[user][scoreIndex] = score;
+                    isScored[user][scoreIndex] = true; // 저장 상태 업데이트
+
+                    // 라벨 색상 변경 및 총점 업데이트
+                    label.setForeground(Color.BLACK);
+                    totalScore[user] += score;
+                    scoreLabels[user][14].setText(String.valueOf(totalScore[user])); // 총점 표시
+                } catch (NumberFormatException ex) {
+                    // 예외 발생 시 오류 메시지 출력
+                    System.err.println("Invalid text for score: " + text);
+                    JOptionPane.showMessageDialog(null, "Please enter a valid number.");
+                }
             }
         });
     }
@@ -325,8 +374,13 @@ public class YachtDiceClient extends JFrame {
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
 
+    private void setUser(){ //유저리스트
+        for(int i = 0; i < 4; i++){
+            userLabels[i].setText(User_Array_client[i]);
+        }
+    }
 
-    private JPanel AddDiceComponents() {
+    private JPanel AddDiceComponents(int userNum) {
         JPanel jPanel = new JPanel();
         JButton[] b_dices = new JButton[DICE_SIZE];
         jPanel.setOpaque(false); // 패널을 투명하게 설정
@@ -346,7 +400,7 @@ public class YachtDiceClient extends JFrame {
 
         // 굴리기 버튼 생성
         JButton b_roll = createRollButton();
-        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel)); // 버튼 액션 연결
+        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel, userNum)); // 버튼 액션 연결
         jPanel.add(b_roll);
 
         return jPanel;
@@ -385,12 +439,12 @@ public class YachtDiceClient extends JFrame {
         return button;
     }
 
-    private void setupRollButton(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
+    private void setupRollButton(JButton b_roll, JButton[] b_dices, JPanel jPanel, int userNum) {
         boolean allSaved = checkIfAllSaved(b_dices); // 주사위 상태 확인
 
         if (!allSaved) {
             // 모든 주사위가 저장되지 않은 경우에만 리스너 추가
-            handleRollAction(b_roll, b_dices, jPanel);
+            handleRollAction(b_roll, b_dices, jPanel, userNum);
         } else {
             b_roll.setEnabled(false); // 모든 주사위가 저장된 경우 버튼 비활성화
             for (int i = 0; i < DICE_SIZE; i++) {
@@ -399,7 +453,7 @@ public class YachtDiceClient extends JFrame {
         }
     }
 
-    private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
+    private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel, int userNum) {
         b_roll.setEnabled(false); // 굴리기 버튼 비활성화
         checkRoll++;
 
@@ -416,7 +470,7 @@ public class YachtDiceClient extends JFrame {
             if (elapsed >= 2) { // 2초 후 굴리기 종료
                 timer.stop();
                 finalizeRoll(b_roll, b_dices, jPanel);
-                available();
+                available(userNum);
 
             } else {
                 for (int i = 0; i < DICE_SIZE; i++) {
@@ -480,24 +534,25 @@ public class YachtDiceClient extends JFrame {
         });
     }
 
-    private void setScore(int score) { //점수등록
-        totalScore += score;
+    private void setScore(int userNum, int score) { //점수등록
+        totalScore[userNum] += score;
     }
 
-    private void available() {
+    private void available(int userNum) {
         Arrays.fill(counts, 0); //counts 0으로 초기화
         for (int user = 0; user < 4; user++) { //라벨 초기화 (점수확정X인것만)
             for (int i = 0; i < scoreLabels[user].length; i++) { //라벨 초기화
-                if (!isScored[i]) {
-                    scoreLabels[user][i].setText("");
+                if (!isScored[userNum][i]) {
+                    scoreLabels[userNum][i].setText("");
                 }
             }
         }
-        countDices();
-        checkScore();
+        countDices(userNum);
+        checkScore(userNum);
+
     }
 
-    private void checkScore() {
+    private void checkScore(int userNum) {
 
         // 에이스 ~ 헥사까지 체크
         Map<Integer, Integer> scores = calcScore();
@@ -505,9 +560,9 @@ public class YachtDiceClient extends JFrame {
             int diceValue = entry.getKey();
             int score = entry.getValue();
             if (score > 0) {
-                if (!isScored[diceValue - 1]) {
-                    scoreLabels[user1][diceValue - 1].setText(String.valueOf(score));
-                    scoreLabels[user1][diceValue - 1].setForeground(Color.GRAY);
+                if (!isScored[userNum][diceValue - 1]) {
+                    scoreLabels[userNum][diceValue - 1].setText(String.valueOf(score));
+                    scoreLabels[userNum][diceValue - 1].setForeground(Color.GRAY);
                 }
             }
         }
@@ -516,52 +571,52 @@ public class YachtDiceClient extends JFrame {
         String results = "[";
 
         //족보 체크
-        if (checkNo1() && !isScored[9]) { // 포커 체크
-            scoreLabels[user1][9].setText(String.valueOf(totalScore()));
-            scoreLabels[user1][9].setForeground(Color.GRAY);
+        if (checkNo1() && !isScored[userNum][9]) { // 포커 체크
+            scoreLabels[userNum][9].setText(String.valueOf(totalScore()));
+            scoreLabels[userNum][9].setForeground(Color.GRAY);
 
             results += "포커 ";
             hasResults = true;
         }
 
-        if (checkNo2() && !isScored[10]) { //풀하우스 체크
-            scoreLabels[user1][10].setText(String.valueOf(totalScore()));
-            scoreLabels[user1][10].setForeground(Color.GRAY);
+        if (checkNo2() && !isScored[userNum][10]) { //풀하우스 체크
+            scoreLabels[userNum][10].setText(String.valueOf(totalScore()));
+            scoreLabels[userNum][10].setForeground(Color.GRAY);
 
             results += "풀하우스 ";
             hasResults = true;
         }
 
-        if (checkNo3() && !isScored[11]) { //스몰 스트레이트 체크
+        if (checkNo3() && !isScored[userNum][11]) { //스몰 스트레이트 체크
             int score = 15;
-            scoreLabels[user1][11].setText(String.valueOf(score));
-            scoreLabels[user1][11].setForeground(Color.GRAY);
+            scoreLabels[userNum][11].setText(String.valueOf(score));
+            scoreLabels[userNum][11].setForeground(Color.GRAY);
 
             results += "스몰 스트레이트 ";
             hasResults = true;
         }
 
-        if (checkNo4() && !isScored[12]) {
+        if (checkNo4() && !isScored[userNum][12]) {
             int score = 30;
-            scoreLabels[user1][12].setText(String.valueOf(score));
-            scoreLabels[user1][12].setForeground(Color.GRAY);
+            scoreLabels[userNum][12].setText(String.valueOf(score));
+            scoreLabels[userNum][12].setForeground(Color.GRAY);
 
             results += "라지 스트레이트 ";
             hasResults = true;
         }
 
-        if (checkNo5() && !isScored[13]) {
+        if (checkNo5() && !isScored[userNum][13]) {
             int score = 50;
-            scoreLabels[user1][13].setText(String.valueOf(score));
-            scoreLabels[user1][13].setForeground(Color.GRAY);
+            scoreLabels[userNum][13].setText(String.valueOf(score));
+            scoreLabels[userNum][13].setForeground(Color.GRAY);
 
             results += "요트 ";
             hasResults = true;
         }
 
-        if (!isScored[8]) {
-            scoreLabels[user1][8].setText(String.valueOf(totalScore()));
-            scoreLabels[user1][8].setForeground(Color.GRAY);
+        if (!isScored[userNum][8]) {
+            scoreLabels[userNum][8].setText(String.valueOf(totalScore()));
+            scoreLabels[userNum][8].setForeground(Color.GRAY);
 
             results += "초이스 ";
             hasResults = true;
@@ -570,6 +625,8 @@ public class YachtDiceClient extends JFrame {
             results += "빈공간에 0점 쓰기";
         }
         results += "]";
+
+        scoreLabels[userNum][14].setText(String.valueOf(totalScore[userNum]));
 
         System.out.println(results + checkRoll);
 
@@ -582,7 +639,7 @@ public class YachtDiceClient extends JFrame {
 //        }
 //    }
 
-    private void countDices() { //굴린 주사위 수 저장
+    private void countDices(int userNum) { //굴린 주사위 수 저장
         Arrays.fill(counts, 0); //count 0으로 초기화
 
         for (int i = 0; i < DICE_SIZE; i++) {
@@ -870,6 +927,9 @@ public class YachtDiceClient extends JFrame {
                                 if (Objects.equals(inMsg.userID, t_userID.getText())) {
                                     System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
                                     openRoomWindow(inMsg.message);
+
+                                    //이부분
+                                    setUser();
                                 }
                             }
                             break;
@@ -899,6 +959,7 @@ public class YachtDiceClient extends JFrame {
                                 for (int i = 0; i < 4; i++) {
                                     printDisplay2(User_Array_client[i]);
                                 }
+                                setUser();
                             }
                             break;
                     }
