@@ -47,6 +47,8 @@ public class YachtDiceClient extends JFrame {
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 밑에는 게임창에 필요한 변수
 
+    private String[] User_Array_client = {"", "", "", ""};
+
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpg")).getImage();
     private Image sendButton = new ImageIcon(getClass().getResource("/resources/send_button.png")).getImage();
@@ -271,6 +273,7 @@ public class YachtDiceClient extends JFrame {
         textArea.setBounds(15, 10, 300, 660);
         textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14)); // 폰트 설정
         panel.add(textArea);
+        textArea.setText("");
 
         // 메시지 입력 필드
         t_input_GAME = new JTextField();
@@ -485,7 +488,7 @@ public class YachtDiceClient extends JFrame {
         Arrays.fill(counts, 0); //counts 0으로 초기화
         for (int user = 0; user < 4; user++) { //라벨 초기화 (점수확정X인것만)
             for (int i = 0; i < scoreLabels[user].length; i++) { //라벨 초기화
-                if(!isScored[i]){
+                if (!isScored[i]) {
                     scoreLabels[user][i].setText("");
                 }
             }
@@ -494,17 +497,17 @@ public class YachtDiceClient extends JFrame {
         checkScore();
     }
 
-    private void checkScore(){
+    private void checkScore() {
 
         // 에이스 ~ 헥사까지 체크
         Map<Integer, Integer> scores = calcScore();
         for (Map.Entry<Integer, Integer> entry : scores.entrySet()) {
             int diceValue = entry.getKey();
             int score = entry.getValue();
-            if(score > 0){
-                if(!isScored[diceValue-1]){
-                    scoreLabels[user1][diceValue-1].setText(String.valueOf(score));
-                    scoreLabels[user1][diceValue-1].setForeground(Color.GRAY);
+            if (score > 0) {
+                if (!isScored[diceValue - 1]) {
+                    scoreLabels[user1][diceValue - 1].setText(String.valueOf(score));
+                    scoreLabels[user1][diceValue - 1].setForeground(Color.GRAY);
                 }
             }
         }
@@ -650,7 +653,7 @@ public class YachtDiceClient extends JFrame {
         return basicScore;
     }
 
-    private int totalScore(){
+    private int totalScore() {
         int total = 0;
         total = Arrays.stream(dices).sum(); // 나온 값 전부 더함
         return total;
@@ -881,7 +884,21 @@ public class YachtDiceClient extends JFrame {
                         case Yacht.MODE_TX_STRING_ROOM_FIRST:
                             if (roomTitle_copy.equals(inMsg.roomTitle)) {
                                 // 방에 입장과 퇴장할때 채팅 뿌리기
+                                String temp_message = inMsg.message;
+                                String[] parts = temp_message.split("!=!");
+
+                                for (int i = 1; i < parts.length; i++) {
+                                    User_Array_client[i - 1] = parts[i];
+                                }
+                                for (int i = parts.length; i < 5; i++) {
+                                    User_Array_client[i - 1] = "";
+                                }
+
+                                inMsg.message = parts[0];
                                 printDisplay2(inMsg.message);
+                                for (int i = 0; i < 4; i++) {
+                                    printDisplay2(User_Array_client[i]);
+                                }
                             }
                             break;
                     }

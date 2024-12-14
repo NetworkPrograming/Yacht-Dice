@@ -9,6 +9,8 @@ public class YachtDiceServer extends JFrame {
     private int port;
     private ServerSocket serverSocket = null;
 
+    private String[] User_Array_server = {"","","",""};
+
     private Thread acceptThread = null;
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
 
@@ -161,6 +163,7 @@ public class YachtDiceServer extends JFrame {
                         }
 
                         if (targetRoom != null) {
+                            int i = 0;
                             // 방의 현재 참가자 수 확인
                             int currentPeopleCount = targetRoom.getPeople().size();
                             if (currentPeopleCount < targetRoom.getMaxPeople()) {
@@ -176,6 +179,8 @@ public class YachtDiceServer extends JFrame {
                                 } else {
                                     for (String userID : people) {
                                         printDisplay("- " + userID);
+                                        User_Array_server[i] = userID;
+                                        i++;
                                     }
                                     printDisplay("");
                                 }
@@ -205,6 +210,7 @@ public class YachtDiceServer extends JFrame {
                         }
 
                         if (targetRoom != null) {
+                            int i = 0;
                             // 방에서 사용자 제거
                             targetRoom.removePeople(uid);
 
@@ -225,6 +231,11 @@ public class YachtDiceServer extends JFrame {
                                 printDisplay("(" + targetRoom.getTitle() + ")" + " 방의 참가자 목록 :");
                                 for (String userID : people) {
                                     printDisplay("- " + userID);
+                                    User_Array_server[i] = userID;
+                                    i++;
+                                }
+                                for (int k = i; k < 4; k++) {
+                                    User_Array_server[k] = "";
                                 }
                                 printDisplay("");
                             }
@@ -246,6 +257,10 @@ public class YachtDiceServer extends JFrame {
                         printDisplay("(" + msg.roomTitle + ")" + "방의 " + message); // 방에서 채팅하는거 보이게 하려면 활성화
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_TX_STRING_ROOM_FIRST) {
+                        String result = String.join("!=!", User_Array_server);
+                        result = "!=!" + result;
+                        msg.message = msg.message + result;
+                        //printDisplay(msg.message);
                         broadcasting(msg);
                     }
                 }
