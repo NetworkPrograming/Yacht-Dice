@@ -15,6 +15,7 @@ public class Yacht implements Serializable {
     public final static int MODE_QUIT_ROOM = 0x1000;            // 0001 0000 0000 0000
     public final static int MODE_TX_STRING_ROOM = 0x2000;       // 0010 0000 0000 0000
     public final static int MODE_TX_STRING_ROOM_FIRST = 0x40000;// 0100 0000 0000 0000
+    public final static int MODE_TX_STRING_SCORE = 0x80000;
 
     String userID;
     int mode;
@@ -57,6 +58,8 @@ public class Yacht implements Serializable {
         } else if (code == MODE_REQUEST_ROOM_LIST) {
             this.message = ""; // message를 message 사용
         } else if (code == MODE_QUIT_ROOM) {
+            this.message = message; // message를 message 사용
+        } else if (code == MODE_TX_STRING_SCORE) {
             this.message = message; // message를 message 사용
         }
     }

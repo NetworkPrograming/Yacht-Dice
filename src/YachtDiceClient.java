@@ -100,16 +100,6 @@ public class YachtDiceClient extends JFrame {
 
         rand = new Random();
 
-        userNum = 0; //유저 들어온 순서대로.. 0 1 2 3
-        String currentUser = uid;
-        System.out.println("Current User: " + currentUser);
-        for (int i = 0; i < User_Array_client.length; i++) {
-            if (currentUser.equals(User_Array_client[i])) {
-                userNum = i;
-                break; // 유저를 찾으면 더 이상 탐색하지 않음
-            }
-        }
-
         userName = new String[4];
 
         System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
@@ -301,6 +291,7 @@ public class YachtDiceClient extends JFrame {
                     label.setForeground(Color.BLACK);
                     totalScore[user] += score;
                     scoreLabels[user][14].setText(String.valueOf(totalScore[user])); // 총점 표시
+                    sendScoreToServer(uid, user, scoreIndex, score);
                 } catch (NumberFormatException ex) {
                     // 예외 발생 시 오류 메시지 출력
                     System.err.println("Invalid text for score: " + text);
@@ -723,6 +714,50 @@ public class YachtDiceClient extends JFrame {
         return total;
     }
 
+    // 클라이언트에서 점수 업데이트 요청 보내기
+    public void sendScoreUpdate(int userNum, int scoreIndex, int score, DataOutputStream out) {
+        try {
+            String message = "UPDATE_SCORE," + userNum + "," + scoreIndex + "," + score;
+            out.writeUTF(message); // 서버로 메시지 전송
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 점수 갱신 메서드
+    public void sendScoreToServer(String userID, int userNum, int scoreIndex, int score) {
+        try {
+            // 전송할 데이터 객체 생성
+            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score);
+
+            // 데이터 전송
+            out.writeObject(data); // 객체를 서버로 전송
+            out.flush(); // 즉시 서버로 전송
+
+            System.out.println("데이터가 서버로 전송되었습니다.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // 점수 갱신 함수
+    public void updateScore(int userNum, int scoreIndex, int score) {
+        scoreLabels[userNum][scoreIndex].setText(String.valueOf(score));
+    }
+
+    private int setUserNum(String userId){
+        System.out.println("Current User: " + userId);
+        for (int i = 0; i < 4; i++) {
+            if (userId.equals(User_Array_client[i])) {
+                userNum = i;
+                break; // 유저를 찾으면 더 이상 탐색하지 않음
+            }
+        }
+        printDisplay2(userId + ":" + userNum);
+        return userNum;
+    }
+
 
     private void playSound(String soundFile) {
         try {
@@ -946,6 +981,7 @@ public class YachtDiceClient extends JFrame {
                             if (roomTitle_copy.equals(inMsg.roomTitle)) { // 입장한 방과 채팅을 친 방이 같다면
                                 // 만약 입장을 하지 않았으면 방 이름은 없을것이고 다른 방에 입장했다면 조건에 만족하지 않을 것임
                                 printDisplay2(inMsg.userID + ": " + inMsg.message);
+                                userNum = setUserNum(inMsg.userID);
                             }
                             break;
                         case Yacht.MODE_TX_STRING_ROOM_FIRST:
@@ -967,8 +1003,26 @@ public class YachtDiceClient extends JFrame {
                                     printDisplay2(User_Array_client[i]);
                                 }
                                 setUser();
+                                printDisplay2(String.valueOf(userNum));
                             }
                             break;
+                        case Yacht.MODE_TX_STRING_SCORE: // 점수 받기
+                            String message = inMsg.message;
+                            printDisplay("서버로부터 받은 점수 정보: " + message);
+
+                            // 메시지에서 점수 정보 추출
+                            String[] parts = message.split(", ");
+                            String userNumStr = parts[0].split(": ")[1];
+                            String scoreIndexStr = parts[1].split(": ")[1];
+                            String scoreStr = parts[2].split(": ")[1];
+
+                            int userNum = Integer.parseInt(userNumStr);
+                            int scoreIndex = Integer.parseInt(scoreIndexStr);
+                            int score = Integer.parseInt(scoreStr);
+
+                            // 점수판에 반영하는 로직
+                            updateScore(userNum, scoreIndex, score);
+
                     }
                 } catch (IOException e) {
                     printDisplay("연결을 종료했습니다.");
