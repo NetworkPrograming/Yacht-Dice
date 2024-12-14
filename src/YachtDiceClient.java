@@ -118,6 +118,7 @@ public class YachtDiceClient extends JFrame {
         newFrame.setSize(1450, 770);
         newFrame.setLocationRelativeTo(null); // 화면 중앙에 위치
         newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
+        newFrame.setResizable(false); // 창 크기 조절 비활성화
 
         // 레이어드 페인(JLayeredPane) 생성
         JLayeredPane layeredPane = new JLayeredPane();
@@ -314,15 +315,21 @@ public class YachtDiceClient extends JFrame {
         JPanel panel = new JPanel();
         panel.setOpaque(false); // 패널을 투명하게 설정
         panel.setLayout(null);
+
         // JTextArea 추가하여 메시지 표시
         textArea.setEditable(false);
         //textArea.setOpaque(false);
         Border border = BorderFactory.createLineBorder(Color.darkGray, 2);
         //textArea.setBorder(border);
-        textArea.setBounds(15, 10, 300, 660);
         textArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14)); // 폰트 설정
-        panel.add(textArea);
         textArea.setText("");
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setBounds(15, 10, 300, 660); // 스크롤 패널 위치 및 크기 설정
+        scrollPane.setOpaque(false); // 스크롤 패널을 투명하게 설정
+
+        panel.add(scrollPane);
+
 
         // 메시지 입력 필드
         t_input_GAME = new JTextField();
@@ -956,7 +963,7 @@ public class YachtDiceClient extends JFrame {
 
                                 inMsg.message = parts[0];
                                 printDisplay2(inMsg.message);
-                                for (int i = 0; i < 4; i++) {
+                                for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
                                     printDisplay2(User_Array_client[i]);
                                 }
                                 setUser();
