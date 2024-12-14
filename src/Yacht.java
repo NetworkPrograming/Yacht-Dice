@@ -14,8 +14,10 @@ public class Yacht implements Serializable {
     public final static int MODE_ROOM_LIST = 0x800;             // 1000 0000 0000
     public final static int MODE_QUIT_ROOM = 0x1000;            // 0001 0000 0000 0000
     public final static int MODE_TX_STRING_ROOM = 0x2000;       // 0010 0000 0000 0000
-    public final static int MODE_TX_STRING_ROOM_FIRST = 0x40000;// 0100 0000 0000 0000
-    public final static int MODE_TX_STRING_SCORE = 0x80000;
+    public final static int MODE_TX_STRING_ROOM_FIRST = 0x4000; // 0100 0000 0000 0000
+    public final static int MODE_TX_STRING_SCORE = 0x8000;      // 1000 0000 0000 0000
+    public final static int MODE_GAME_START = 0x10000;          // 0001 0000 0000 0000 0000
+    public final static int MODE_HOW_MANY_PEOPLE = 0x20000;     // 0010 0000 0000 0000 0000
 
     String userID;
     int mode;
@@ -59,7 +61,7 @@ public class Yacht implements Serializable {
             this.message = ""; // message를 message 사용
         } else if (code == MODE_QUIT_ROOM) {
             this.message = message; // message를 message 사용
-        } else if (code == MODE_TX_STRING_SCORE) {
+        } else if (code == MODE_HOW_MANY_PEOPLE) {
             this.message = message; // message를 message 사용
         }
     }
@@ -75,6 +77,12 @@ public class Yacht implements Serializable {
         } else if (code == MODE_TX_STRING_ROOM_FIRST) {
             this.roomTitle = message;
             this.message = passWord;
+        } else if (code == MODE_GAME_START) {
+            this.roomTitle = message;
+            this.message = passWord;
+        } else if (code == MODE_TX_STRING_SCORE) {
+            this.message = message; // message를 message 사용
+            this.roomTitle = passWord;
         }
     }
 

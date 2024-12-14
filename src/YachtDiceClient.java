@@ -18,7 +18,6 @@ public class YachtDiceClient extends JFrame {
     private JButton b_disconnect;
     private JButton b_exit;
 
-
     private JButton b_createRoom;
 
     private Socket socket;
@@ -36,9 +35,7 @@ public class YachtDiceClient extends JFrame {
     String password;
 
     private JTextArea t_display;
-    private JTextArea t_display_test;
     private JTextField t_input;
-    private JTextField t_input_test;
     private JButton b_send;
 
     String roomTitle_copy = "";
@@ -70,7 +67,6 @@ public class YachtDiceClient extends JFrame {
     int[] dices;
     int[] counts;
 
-
     boolean[][] isScored; //점수등록여부
 
     int[] userList; //유저리스트
@@ -79,7 +75,7 @@ public class YachtDiceClient extends JFrame {
     String[] userName;
 
     int[] totalScore; //총점
-    int[] middleScore; //에이스~헥사까지 점수
+    int[] middleScore; //에이스 ~ 헥사까지 점수
     int bonusScore = 35;
 
     JLabel[][] scoreLabels;
@@ -87,6 +83,8 @@ public class YachtDiceClient extends JFrame {
 
     Random rand;
     int user1 = 0;
+
+    int check_game_start = 0; // 게임 시작을 하기 위한 인원 체크용 변수
 
     public void GameGUI() {
 
@@ -301,7 +299,6 @@ public class YachtDiceClient extends JFrame {
         });
     }
 
-
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
         panel.setOpaque(false); // 패널을 투명하게 설정
@@ -331,11 +328,10 @@ public class YachtDiceClient extends JFrame {
 
         // 메시지 보내기 버튼
         b_send_GAME = new JButton();
-        String sendImage = "/resources/send_button.png";
         b_send_GAME.setBorder(border);
 
         // 이미지 로드 및 크기 조정
-        ImageIcon originalIcon = new ImageIcon(getClass().getResource(sendImage));
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/send_button.png"));
         Image scaledImage = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
 
@@ -372,8 +368,8 @@ public class YachtDiceClient extends JFrame {
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
 
-    private void setUser(){ //유저리스트
-        for(int i = 0; i < 4; i++){
+    private void setUser() { //유저리스트
+        for (int i = 0; i < 4; i++) {
             userLabels[i].setText(User_Array_client[i]);
         }
     }
@@ -387,21 +383,58 @@ public class YachtDiceClient extends JFrame {
         // 주사위 초기값 설정
         Arrays.fill(dices, 1);
 
-        // 주사위 버튼 생성 및 추가
-        for (int i = 0; i < DICE_SIZE; i++) {
-            int xPosition = 110 + (i * 90); // x 좌표 동적 설정
-            b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210);
-            b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
-            jPanel.add(b_dices[i]);
-            b_dices[i].setVisible(true);
-        }
-
         // 굴리기 버튼 생성
         JButton b_roll = createRollButton();
         b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel, userNum)); // 버튼 액션 연결
-        jPanel.add(b_roll);
+
+        JButton b_game_start = game_start_Button();
+        check_game_start = 0;
+        b_game_start.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                how_many_people();
+                try {
+                    // 0.1초 슬립. how_many_people 함수에서 변수 처리하는 속도가 너무 빨라서 일부러 지연 시킴.
+                    Thread.sleep(100);
+                } catch (InterruptedException e22) {
+                    e22.printStackTrace();
+                }
+                printDisplay2(String.valueOf(check_game_start));
+                if (check_game_start == 1) {
+
+                    jPanel.remove(b_game_start);
+                    jPanel.revalidate();
+                    jPanel.repaint();
+
+                    jPanel.add(b_roll);
+                    // 주사위 버튼 생성 및 추가
+                    for (int i = 0; i < DICE_SIZE; i++) {
+                        int xPosition = 110 + (i * 90); // x 좌표 동적 설정
+                        b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210);
+                        b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
+                        jPanel.add(b_dices[i]);
+                        b_dices[i].setVisible(true);
+                    }
+                    send_game_start();
+                } else {
+                    JOptionPane.showMessageDialog(jPanel, "2명 이상이 방에 입장해 있어야 합니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        });
+
+        jPanel.add(b_game_start);
 
         return jPanel;
+    }
+
+    private void how_many_people() {
+        // 게임 시작
+        send(new Yacht(t_userID.getText(), Yacht.MODE_HOW_MANY_PEOPLE, roomTitle_copy));
+    }
+
+    private void send_game_start() {
+        // 게임 시작
+        send(new Yacht(t_userID.getText(), Yacht.MODE_GAME_START, roomTitle_copy, "1"));
     }
 
     private JButton createDiceButton(String imagePath, int x, int y) {
@@ -426,13 +459,24 @@ public class YachtDiceClient extends JFrame {
 
     private JButton createRollButton() {
         JButton button = new JButton();
-        String rollImage = "/resources/roll_button.png";
-        ImageIcon originalIcon = new ImageIcon(getClass().getResource(rollImage));
-        Image scaledImage = originalIcon.getImage().getScaledInstance(200, 110, Image.SCALE_SMOOTH);
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/roll_button.png"));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
         button.setIcon(new ImageIcon(scaledImage));
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setBounds(230, 400, 200, 110);
+
+        return button;
+    }
+
+    private JButton game_start_Button() {
+        JButton button = new JButton();
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/game_start.png"));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(200, 110, Image.SCALE_SMOOTH);
+        button.setIcon(new ImageIcon(scaledImage));
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setBounds(230, 550, 200, 110);
 
         return button;
     }
@@ -728,7 +772,7 @@ public class YachtDiceClient extends JFrame {
     public void sendScoreToServer(String userID, int userNum, int scoreIndex, int score) {
         try {
             // 전송할 데이터 객체 생성
-            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score);
+            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score, roomTitle_copy);
 
             // 데이터 전송
             out.writeObject(data); // 객체를 서버로 전송
@@ -740,13 +784,12 @@ public class YachtDiceClient extends JFrame {
         }
     }
 
-
     // 점수 갱신 함수
     public void updateScore(int userNum, int scoreIndex, int score) {
         scoreLabels[userNum][scoreIndex].setText(String.valueOf(score));
     }
 
-    private int setUserNum(String userId){
+    private int setUserNum(String userId) {
         System.out.println("Current User: " + userId);
         for (int i = 0; i < 4; i++) {
             if (userId.equals(User_Array_client[i])) {
@@ -757,7 +800,6 @@ public class YachtDiceClient extends JFrame {
         printDisplay2(userId + ":" + userNum);
         return userNum;
     }
-
 
     private void playSound(String soundFile) {
         try {
@@ -963,11 +1005,13 @@ public class YachtDiceClient extends JFrame {
                             displayRoomList(roomTitlesArray); // 방 목록 출력
                             break;
                         case Yacht.MODE_ENTER_ROOM:
-                            if (inMsg.message.equals(roomTitle_copy + " 방이 가득 차서 입장할 수 없습니다.")) {
-                                printDisplay(inMsg.message);
+                            if (inMsg.message.equals("(" + roomTitle_copy + ") 방이 가득 차서 입장할 수 없습니다.")) {
+                                JOptionPane.showMessageDialog(YachtDiceClient.this, inMsg.message, "경고", JOptionPane.WARNING_MESSAGE);
+                            } else if (inMsg.message.equals("(" + roomTitle_copy + ")" + " 방이 게임을 시작 해 입장할 수 없습니다.")) {
+                                JOptionPane.showMessageDialog(YachtDiceClient.this, inMsg.message, "경고", JOptionPane.WARNING_MESSAGE);
                             } else {
                                 if (Objects.equals(inMsg.userID, t_userID.getText())) {
-                                    System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
+                                    //System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
                                     openRoomWindow(inMsg.message);
 
                                     //이부분
@@ -1007,22 +1051,35 @@ public class YachtDiceClient extends JFrame {
                             }
                             break;
                         case Yacht.MODE_TX_STRING_SCORE: // 점수 받기
-                            String message = inMsg.message;
-                            printDisplay("서버로부터 받은 점수 정보: " + message);
+                            // if 문을 통해서 해당 방에만 정보 뿌리게 해놨습니다
+                            // Yacht.java 코드에서 원래 message 변수 1개짜리였는데 지금은 2개짜리로 바뀌어서 roomTitle 변수까지 사용돼요
+                            if (roomTitle_copy.equals(inMsg.roomTitle)) {
+                                String message = inMsg.message;
+                                printDisplay2("서버로부터 받은 점수 정보: " + message);
 
-                            // 메시지에서 점수 정보 추출
-                            String[] parts = message.split(", ");
-                            String userNumStr = parts[0].split(": ")[1];
-                            String scoreIndexStr = parts[1].split(": ")[1];
-                            String scoreStr = parts[2].split(": ")[1];
+                                // 메시지에서 점수 정보 추출
+                                String[] parts = message.split(", ");
+                                String userNumStr = parts[0].split(": ")[1];
+                                String scoreIndexStr = parts[1].split(": ")[1];
+                                String scoreStr = parts[2].split(": ")[1];
 
-                            int userNum = Integer.parseInt(userNumStr);
-                            int scoreIndex = Integer.parseInt(scoreIndexStr);
-                            int score = Integer.parseInt(scoreStr);
+                                int userNum = Integer.parseInt(userNumStr);
+                                int scoreIndex = Integer.parseInt(scoreIndexStr);
+                                int score = Integer.parseInt(scoreStr);
 
-                            // 점수판에 반영하는 로직
-                            updateScore(userNum, scoreIndex, score);
-
+                                // 점수판에 반영하는 로직
+                                updateScore(userNum, scoreIndex, score);
+                            }
+                            break;
+                        case Yacht.MODE_GAME_START:
+                            break;
+                        case Yacht.MODE_HOW_MANY_PEOPLE:
+                            if (inMsg.message.equals("게임이 시작되려면 2명 이상이 방에 입장해 있어야 합니다.")) {
+                                check_game_start = 0;
+                            } else {
+                                check_game_start = 1;
+                            }
+                            break;
                     }
                 } catch (IOException e) {
                     printDisplay("연결을 종료했습니다.");

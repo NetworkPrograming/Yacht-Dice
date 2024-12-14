@@ -9,7 +9,7 @@ public class YachtDiceServer extends JFrame {
     private int port;
     private ServerSocket serverSocket = null;
 
-    private String[] User_Array_server = {"","","",""};
+    private String[] User_Array_server = {"", "", "", ""};
 
     private Thread acceptThread = null;
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
@@ -89,11 +89,13 @@ public class YachtDiceServer extends JFrame {
                     if (msg.mode == Yacht.MODE_LOGOUT) {
                         uid = msg.userID;
                         msg.message = uid + " 퇴장. [ 현재 참가자 수 : " + (users.size() - 1) + " ]";
+                        sendRoomListToClients();
                         broadcasting(msg);
                         break;
                     } else if (msg.mode == Yacht.MODE_TX_STRING) {
                         String message = "(" + uid + ")" + " 님의 채팅: " + msg.message;
                         printDisplay(message);
+                        sendRoomListToClients();
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_TX_IMAGE) {
                         printDisplay(uid + ": " + msg.message);
@@ -163,34 +165,41 @@ public class YachtDiceServer extends JFrame {
                         }
 
                         if (targetRoom != null) {
-                            int i = 0;
-                            // 방의 현재 참가자 수 확인
-                            int currentPeopleCount = targetRoom.getPeople().size();
-                            if (currentPeopleCount < targetRoom.getMaxPeople()) {
-                                // 방에 참가 가능
-                                targetRoom.addPeople(uid); // 참가자 추가
-
-                                List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
-                                printDisplay("(" + targetRoom.getTitle() + ")" + " 방에 (" + uid + ") 님이 참가하였습니다.");
-                                printDisplay(targetRoom.getTitle() + " 방의 참가자 목록 :");
-
-                                if (people.isEmpty()) {
-                                    printDisplay("현재 참가자가 없습니다.");
-                                } else {
-                                    for (String userID : people) {
-                                        printDisplay("- " + userID);
-                                        User_Array_server[i] = userID;
-                                        i++;
-                                    }
-                                    printDisplay("");
-                                }
-                                broadcasting(msg);
-                            } else {
-                                // 방이 가득 찼을 경우
-                                String message = "(" + targetRoom.getTitle() + ")" + " 방이 가득 차서 입장할 수 없습니다.";
+                            if (targetRoom.getGame_start_flag() == 1) {
+                                String message = "(" + targetRoom.getTitle() + ")" + " 방이 게임을 시작 해 입장할 수 없습니다.";
                                 msg.message = message;
                                 printDisplay("(" + uid + ")" + " 님 " + message);
                                 send(msg);
+                            } else {
+                                int i = 0;
+                                // 방의 현재 참가자 수 확인
+                                int currentPeopleCount = targetRoom.getPeople().size();
+                                if (currentPeopleCount < targetRoom.getMaxPeople()) {
+                                    // 방에 참가 가능
+                                    targetRoom.addPeople(uid); // 참가자 추가
+
+                                    List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
+                                    printDisplay("(" + targetRoom.getTitle() + ")" + " 방에 (" + uid + ") 님이 참가하였습니다.");
+                                    printDisplay(targetRoom.getTitle() + " 방의 참가자 목록 :");
+
+                                    if (people.isEmpty()) {
+                                        printDisplay("현재 참가자가 없습니다.");
+                                    } else {
+                                        for (String userID : people) {
+                                            printDisplay("- " + userID);
+                                            User_Array_server[i] = userID;
+                                            i++;
+                                        }
+                                        printDisplay("");
+                                    }
+                                    broadcasting(msg);
+                                } else {
+                                    // 방이 가득 찼을 경우
+                                    String message = "(" + targetRoom.getTitle() + ")" + " 방이 가득 차서 입장할 수 없습니다.";
+                                    msg.message = message;
+                                    printDisplay("(" + uid + ")" + " 님 " + message);
+                                    send(msg);
+                                }
                             }
                         } else {
                             // 방이 존재하지 않는 경우
@@ -199,6 +208,7 @@ public class YachtDiceServer extends JFrame {
                             msg.message = message;
                             send(msg);
                         }
+                        sendRoomListToClients();
                     } else if (msg.mode == Yacht.MODE_QUIT_ROOM) {
                         //방 퇴장
                         Room targetRoom = null;
@@ -284,6 +294,49 @@ public class YachtDiceServer extends JFrame {
 
                         // 해당 값을 다른 클라이언트로 브로드캐스팅
                         broadcasting(msg);
+                    } else if (msg.mode == Yacht.MODE_GAME_START) {
+                        Room targetRoom = null;
+                        for (Room room : rooms) {
+                            if (room.getTitle().equals(msg.roomTitle)) {
+                                targetRoom = room;
+                                break;
+                            }
+                        }
+                        if (targetRoom != null) {
+                            targetRoom.setGame_start_flag(Integer.parseInt(msg.message));
+                        } else {
+                            // 방이 존재하지 않는 경우
+                            String message = "존재하지 않는 방입니다.";
+                            printDisplay(message);
+                            msg.message = message;
+                            send(msg);
+                        }
+                    } else if (msg.mode == Yacht.MODE_HOW_MANY_PEOPLE) {
+                        Room targetRoom = null;
+                        for (Room room : rooms) {
+                            if (room.getTitle().equals(msg.message)) {
+                                targetRoom = room;
+                                break;
+                            }
+                        }
+                        if (targetRoom != null) {
+                            int currentPeopleCount = targetRoom.getPeople().size();
+                            printDisplay(String.valueOf(currentPeopleCount));
+                            if (currentPeopleCount < 2) {
+
+                                msg.message = "게임이 시작되려면 2명 이상이 방에 입장해 있어야 합니다.";
+                                send(msg);
+                            } else {
+                                msg.message = "게임 시작";
+                                send(msg);
+                            }
+                        } else {
+                            // 방이 존재하지 않는 경우
+                            String message = "존재하지 않는 방입니다.";
+                            printDisplay(message);
+                            msg.message = message;
+                            send(msg);
+                        }
                     }
                 }
                 users.removeElement(this);
@@ -319,6 +372,7 @@ public class YachtDiceServer extends JFrame {
 
             String[] roomTitlesArray = roomList.toString().split(","); // 쉼표로 분리하여 배열로 변환
             displayRoomList(roomTitlesArray);
+            refresh();
         }
 
         private void displayRoomList(String[] roomEntries) {
