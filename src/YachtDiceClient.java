@@ -394,12 +394,12 @@ public class YachtDiceClient extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 how_many_people();
                 try {
-                    // 0.1초 슬립. how_many_people 함수에서 변수 처리하는 속도가 너무 빨라서 일부러 지연 시킴.
+                    // 0.1초 슬립. how_many_people 함수에서 변수 처리하는 속도가 너무 느림.
+                    // 슬립을 해서 변수 대입할 시간을 벌어줌
                     Thread.sleep(100);
                 } catch (InterruptedException e22) {
                     e22.printStackTrace();
                 }
-                printDisplay2(String.valueOf(check_game_start));
                 if (check_game_start == 1) {
 
                     jPanel.remove(b_game_start);
@@ -423,7 +423,6 @@ public class YachtDiceClient extends JFrame {
         });
 
         jPanel.add(b_game_start);
-
         return jPanel;
     }
 
@@ -453,7 +452,6 @@ public class YachtDiceClient extends JFrame {
                 button.setLocation(button.getX(), button.getY() + 130); // 해제 시 원위치
             }
         });
-
         return button;
     }
 
