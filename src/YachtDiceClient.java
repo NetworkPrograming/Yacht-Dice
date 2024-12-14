@@ -100,6 +100,7 @@ public class YachtDiceClient extends JFrame {
         newFrame.setSize(1450, 770);
         newFrame.setLocationRelativeTo(null); // 화면 중앙에 위치
         newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
+        newFrame.setResizable(false); // 창 크기 조절 비활성화
 
         // 레이어드 페인(JLayeredPane) 생성
         JLayeredPane layeredPane = new JLayeredPane();
