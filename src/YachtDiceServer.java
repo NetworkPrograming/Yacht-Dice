@@ -304,6 +304,7 @@ public class YachtDiceServer extends JFrame {
                         }
                         if (targetRoom != null) {
                             targetRoom.setGame_start_flag(Integer.parseInt(msg.message));
+                            send(msg);
                         } else {
                             // 방이 존재하지 않는 경우
                             String message = "존재하지 않는 방입니다.";

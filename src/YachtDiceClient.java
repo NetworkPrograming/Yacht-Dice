@@ -85,6 +85,11 @@ public class YachtDiceClient extends JFrame {
     int user1 = 0;
 
     int check_game_start = 0; // 게임 시작을 하기 위한 인원 체크용 변수
+    JPanel dice_panel = new JPanel();
+    JButton[] b_dices = new JButton[DICE_SIZE];
+    // 굴리기 버튼 생성
+    JButton b_roll;
+    JButton b_game_start;
 
     public void GameGUI() {
 
@@ -375,55 +380,67 @@ public class YachtDiceClient extends JFrame {
     }
 
     private JPanel AddDiceComponents() {
-        JPanel jPanel = new JPanel();
-        JButton[] b_dices = new JButton[DICE_SIZE];
-        jPanel.setOpaque(false); // 패널을 투명하게 설정
-        jPanel.setLayout(null);
+        dice_panel = new JPanel();
+        b_dices = new JButton[DICE_SIZE];
+        // 굴리기 버튼 생성
+        b_roll = new JButton();
+        b_game_start = new JButton();
+
+        dice_panel.setOpaque(false); // 패널을 투명하게 설정
+        dice_panel.setLayout(null);
 
         // 주사위 초기값 설정
         Arrays.fill(dices, 1);
 
         // 굴리기 버튼 생성
-        JButton b_roll = createRollButton();
-        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel)); // 버튼 액션 연결
+        b_roll = createRollButton();
+        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, dice_panel)); // 버튼 액션 연결
 
-        JButton b_game_start = game_start_Button();
+        b_game_start = game_start_Button();
         check_game_start = 0;
         b_game_start.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                how_many_people();
-                try {
-                    // 0.1초 슬립. how_many_people 함수에서 변수 처리하는 속도가 너무 느림.
-                    // 슬립을 해서 변수 대입할 시간을 벌어줌
-                    Thread.sleep(100);
-                } catch (InterruptedException e22) {
-                    e22.printStackTrace();
-                }
-                if (check_game_start == 1) {
-
-                    jPanel.remove(b_game_start);
-                    jPanel.revalidate();
-                    jPanel.repaint();
-
-                    jPanel.add(b_roll);
-                    // 주사위 버튼 생성 및 추가
-                    for (int i = 0; i < DICE_SIZE; i++) {
-                        int xPosition = 110 + (i * 90); // x 좌표 동적 설정
-                        b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210);
-                        b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
-                        jPanel.add(b_dices[i]);
-                        b_dices[i].setVisible(true);
+                if (uid.equals(User_Array_client[0])) { // 플레이어 1만 게임시작 버튼을 누를 수 있음.
+                    how_many_people();
+                    try {
+                        // 0.1초 슬립. how_many_people 함수에서 변수 처리하는 속도가 너무 느림.
+                        // 슬립을 해서 변수 대입할 시간을 벌어줌
+                        Thread.sleep(100);
+                    } catch (InterruptedException e22) {
+                        e22.printStackTrace();
                     }
-                    send_game_start();
+                    if (check_game_start == 1) {
+                        send_game_start();
+                    } else {
+                        JOptionPane.showMessageDialog(dice_panel, "2명 이상이 방에 입장해 있어야 합니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                    }
                 } else {
-                    JOptionPane.showMessageDialog(jPanel, "2명 이상이 방에 입장해 있어야 합니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(dice_panel, "게임은 방장만 시작 할 수 있습니다.", "경고", JOptionPane.WARNING_MESSAGE);
                 }
             }
         });
 
-        jPanel.add(b_game_start);
-        return jPanel;
+        dice_panel.add(b_game_start);
+        return dice_panel;
+    }
+
+    private void UI_update(JPanel jPanel, JButton b_game_start, JButton b_roll, JButton[] b_dices) {
+        jPanel.remove(b_game_start);
+        jPanel.revalidate();
+        jPanel.repaint();
+
+        jPanel.add(b_roll);
+        // 주사위 버튼 생성 및 추가
+        for (int i = 0; i < DICE_SIZE; i++) {
+            int xPosition = 110 + (i * 90); // x 좌표 동적 설정
+            b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210);
+            b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
+            jPanel.add(b_dices[i]);
+            b_dices[i].setVisible(true);
+        }
+        jPanel.repaint();
+        jPanel.revalidate();
     }
 
     private void how_many_people() {
@@ -1040,6 +1057,9 @@ public class YachtDiceClient extends JFrame {
 
                                 inMsg.message = parts[0];
                                 printDisplay2(inMsg.message);
+                                if (inMsg.message.equals("게임 시작!")) {
+                                    UI_update(dice_panel, b_game_start, b_roll, b_dices);
+                                }
                                 for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
                                     printDisplay2(User_Array_client[i]);
                                 }
@@ -1068,6 +1088,7 @@ public class YachtDiceClient extends JFrame {
                             }
                             break;
                         case Yacht.MODE_GAME_START:
+                            send_message_room_first(roomTitle_copy, "게임 시작!");
                             break;
                         case Yacht.MODE_HOW_MANY_PEOPLE:
                             if (inMsg.message.equals("게임이 시작되려면 2명 이상이 방에 입장해 있어야 합니다.")) {
