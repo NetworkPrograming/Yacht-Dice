@@ -427,15 +427,13 @@ public class YachtDiceClient extends JFrame {
         });
 
         dice_panel.add(b_game_start);
-        dice_panel.add(b_giveup);
         return dice_panel;
     }
 
-    private void UI_update(JPanel jPanel, JButton b_game_start, JButton b_roll, JButton[] b_dices) {
+    private void UI_update(JPanel jPanel, JButton b_game_start, JButton b_roll, JButton[] b_dices, JButton b_giveup) {
         jPanel.remove(b_game_start);
-        jPanel.revalidate();
-        jPanel.repaint();
 
+        jPanel.add(b_giveup);
         jPanel.add(b_roll);
         // 주사위 버튼 생성 및 추가
         for (int i = 0; i < DICE_SIZE; i++) {
@@ -445,6 +443,7 @@ public class YachtDiceClient extends JFrame {
             jPanel.add(b_dices[i]);
             b_dices[i].setVisible(true);
         }
+
         jPanel.repaint();
         jPanel.revalidate();
     }
@@ -1098,7 +1097,7 @@ public class YachtDiceClient extends JFrame {
                                 inMsg.message = parts[0];
                                 printDisplay2(inMsg.message);
                                 if (inMsg.message.equals("게임 시작!")) {
-                                    UI_update(dice_panel, b_game_start, b_roll, b_dices);
+                                    UI_update(dice_panel, b_game_start, b_roll, b_dices, b_giveup);
                                 }
                                 for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
                                     printDisplay2(User_Array_client[i]);
