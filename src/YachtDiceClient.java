@@ -297,8 +297,7 @@ public class YachtDiceClient extends JFrame {
                     sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser]);
                 } catch (NumberFormatException ex) {
                     // 예외 발생 시 오류 메시지 출력
-                    System.err.println("Invalid text for score: " + text);
-                    JOptionPane.showMessageDialog(null, "Please enter a valid number.");
+                    System.err.println(e);
                 }
             }
         });
@@ -399,7 +398,7 @@ public class YachtDiceClient extends JFrame {
         b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, dice_panel)); // 버튼 액션 연결
 
         b_giveup = createGiveupButton();
-        b_giveup.addActionListener(e -> setupGiveupButton());
+        b_giveup.addActionListener(e -> setGiveupButton());
 
         b_game_start = game_start_Button();
         check_game_start = 0;
@@ -533,8 +532,37 @@ public class YachtDiceClient extends JFrame {
         }
     }
 
-    private void setupGiveupButton() {
-        // userLabels[?].setText(" "); //유저 나간자리 공백으로 두기
+    private void setGiveupButton() {
+        //항복 다이얼로그 띄우기
+        int choice = JOptionPane.showConfirmDialog(
+                null,
+                "항복하시겠습니까?",
+                "항복하기",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {// 예를 누르면 항복 후 퇴장됨
+            this.dispose();
+            userLabels[userNum].setText("헤헤");
+            setUser();
+            //userLabels[userNum].setText("null"); // 유저 나간 자리 공백으로 두기
+            printDisplay2(String.valueOf(User_Array_client[userNum]));
+
+
+
+            YachtDiceClient.this.setVisible(true);
+            setVisible(false);
+            quit_room(roomTitle_copy);
+            printDisplay(roomTitle_copy + " 게임 방에서 퇴장하였습니다.");
+            checkRoll = 0;
+
+//            JOptionPane.showMessageDialog(
+//                    null,
+//                    "항복하였습니다. 게임방을 퇴장합니다.",
+//                    null,
+//                    JOptionPane.INFORMATION_MESSAGE
+//            );
+        }
     }
 
     private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
@@ -1069,7 +1097,7 @@ public class YachtDiceClient extends JFrame {
                                     openRoomWindow(inMsg.message);
 
                                     //이부분
-                                    setUser();
+                                    //setUser();
                                 }
                             }
                             break;
