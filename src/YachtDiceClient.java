@@ -535,7 +535,7 @@ public class YachtDiceClient extends JFrame {
     }
 
     private void setupGiveupButton() {
-       // userLabels[?].setText(" "); //유저 나간자리 공백으로 두기
+        // userLabels[?].setText(" "); //유저 나간자리 공백으로 두기
     }
 
     private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
@@ -562,7 +562,7 @@ public class YachtDiceClient extends JFrame {
                 for (int i = 0; i < DICE_SIZE; i++) {
                     if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
                         dices[i] = rand.nextInt(6) + 1; // 1~6 랜덤 값
-                        ImgService.updateImage(b_dices[i], "resources/dice" + dices[i] + ".png");
+                        send_rolling_dice(roomTitle_copy, "resources/dice" + dices[i] + ".png" + i);
                     }
 
                 }
@@ -571,6 +571,10 @@ public class YachtDiceClient extends JFrame {
 
         playSound("/resources/dice_roll.wav"); // 주사위 소리 재생
         timer.start();
+    }
+
+    private void send_rolling_dice(String roomTitle, String message) {
+        send(new Yacht(t_userID.getText(), Yacht.MODE_SHOW_ROLLING_DICE, roomTitle, message));
     }
 
     private boolean checkIfAllSaved(JButton[] b_dices) {
@@ -1133,6 +1137,14 @@ public class YachtDiceClient extends JFrame {
                                 check_game_start = 0;
                             } else {
                                 check_game_start = 1;
+                            }
+                            break;
+                        case Yacht.MODE_SHOW_ROLLING_DICE:
+                            if (roomTitle_copy.equals(inMsg.roomTitle)) {
+                                // resources.dice*.png* 문자열이 도착하는데 앞에있는 *은 temp변수에, 뒤에있는 *은 temp_number 변수에 넣는다
+                                int temp_number = Character.getNumericValue(inMsg.message.charAt(19)); // 몇번 주사위
+                                char temp = inMsg.message.charAt(14);
+                                ImgService.updateImage(b_dices[temp_number], "resources/dice" + temp + ".png");
                             }
                             break;
                     }

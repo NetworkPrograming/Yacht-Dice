@@ -340,6 +340,9 @@ public class YachtDiceServer extends JFrame {
                             msg.message = message;
                             send(msg);
                         }
+                    } else if (msg.mode == Yacht.MODE_SHOW_ROLLING_DICE) {
+
+                        broadcasting(msg);
                     }
                 }
                 users.removeElement(this);
