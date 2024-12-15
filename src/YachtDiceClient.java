@@ -2,7 +2,6 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -51,12 +50,11 @@ public class YachtDiceClient extends JFrame {
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpg")).getImage();
     private Image sendButton = new ImageIcon(getClass().getResource("/resources/send_button.png")).getImage();
 
-    JButton giveUpButton = new JButton("Give Up");
     JTextArea textArea = new JTextArea(10, 20);
     private JTextArea chatDisplay; // 채팅 메시지 표시 영역
     private JTextField t_input_GAME;  // 메시지 입력 필드
     private JButton b_send_GAME;    // 메시지 보내기 버튼
-    JButton b_dice;
+    JButton b_giveup;
 
     boolean allTrue;
 
@@ -260,7 +258,6 @@ public class YachtDiceClient extends JFrame {
             scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(scoreLabels[user][14]);
 
-            //클릭 이벤트 리스너 추가
         }
 
         return panel;
@@ -389,6 +386,7 @@ public class YachtDiceClient extends JFrame {
         // 굴리기 버튼 생성
         b_roll = new JButton();
         b_game_start = new JButton();
+        b_giveup = new JButton();
 
         dice_panel.setOpaque(false); // 패널을 투명하게 설정
         dice_panel.setLayout(null);
@@ -399,6 +397,9 @@ public class YachtDiceClient extends JFrame {
         // 굴리기 버튼 생성
         b_roll = createRollButton();
         b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, dice_panel)); // 버튼 액션 연결
+
+        b_giveup = createGiveupButton();
+        b_giveup.addActionListener(e -> setupGiveupButton());
 
         b_game_start = game_start_Button();
         check_game_start = 0;
@@ -426,6 +427,7 @@ public class YachtDiceClient extends JFrame {
         });
 
         dice_panel.add(b_game_start);
+        dice_panel.add(b_giveup);
         return dice_panel;
     }
 
@@ -479,11 +481,27 @@ public class YachtDiceClient extends JFrame {
     private JButton createRollButton() {
         JButton button = new JButton();
         ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/roll_button.png"));
-        Image scaledImage = originalIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+        Image scaledImage = originalIcon.getImage().getScaledInstance(200, 110, Image.SCALE_SMOOTH);
         button.setIcon(new ImageIcon(scaledImage));
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
-        button.setBounds(230, 400, 200, 110);
+        button.setFocusable(false); //포커스테두리 없애기
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); //갖다대면 손가락모양 표시
+        button.setBounds(230, 550, 200, 110);
+
+        return button;
+    }
+
+    private JButton createGiveupButton() {
+        JButton button = new JButton();
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/giveup_button.png"));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(120, 66, Image.SCALE_SMOOTH);
+        button.setIcon(new ImageIcon(scaledImage));
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setFocusable(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setBounds(270, 660, 120, 66);
 
         return button;
     }
@@ -495,6 +513,8 @@ public class YachtDiceClient extends JFrame {
         button.setIcon(new ImageIcon(scaledImage));
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
+        button.setFocusable(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.setBounds(230, 550, 200, 110);
 
         return button;
@@ -512,6 +532,10 @@ public class YachtDiceClient extends JFrame {
                 b_dices[i].setEnabled(false);
             }
         }
+    }
+
+    private void setupGiveupButton() {
+       // userLabels[?].setText(" "); //유저 나간자리 공백으로 두기
     }
 
     private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
@@ -625,6 +649,7 @@ public class YachtDiceClient extends JFrame {
                 if (!isScored[userNum][diceValue - 1]) {
                     scoreLabels[userNum][diceValue - 1].setText(String.valueOf(score));
                     scoreLabels[userNum][diceValue - 1].setForeground(Color.GRAY);
+                    scoreLabels[userNum][diceValue - 1].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 }
             }
         }
@@ -636,6 +661,7 @@ public class YachtDiceClient extends JFrame {
         if (checkNo1() && !isScored[userNum][9]) { // 포커 체크
             scoreLabels[userNum][9].setText(String.valueOf(totalScore()));
             scoreLabels[userNum][9].setForeground(Color.GRAY);
+            scoreLabels[userNum][9].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             results += "포커 ";
             hasResults = true;
@@ -644,6 +670,7 @@ public class YachtDiceClient extends JFrame {
         if (checkNo2() && !isScored[userNum][10]) { //풀하우스 체크
             scoreLabels[userNum][10].setText(String.valueOf(totalScore()));
             scoreLabels[userNum][10].setForeground(Color.GRAY);
+            scoreLabels[userNum][10].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             results += "풀하우스 ";
             hasResults = true;
@@ -653,6 +680,7 @@ public class YachtDiceClient extends JFrame {
             int score = 15;
             scoreLabels[userNum][11].setText(String.valueOf(score));
             scoreLabels[userNum][11].setForeground(Color.GRAY);
+            scoreLabels[userNum][11].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             results += "스몰 스트레이트 ";
             hasResults = true;
@@ -662,6 +690,7 @@ public class YachtDiceClient extends JFrame {
             int score = 30;
             scoreLabels[userNum][12].setText(String.valueOf(score));
             scoreLabels[userNum][12].setForeground(Color.GRAY);
+            scoreLabels[userNum][12].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             results += "라지 스트레이트 ";
             hasResults = true;
@@ -671,6 +700,7 @@ public class YachtDiceClient extends JFrame {
             int score = 50;
             scoreLabels[userNum][13].setText(String.valueOf(score));
             scoreLabels[userNum][13].setForeground(Color.GRAY);
+            scoreLabels[userNum][13].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             results += "요트 ";
             hasResults = true;
@@ -679,6 +709,7 @@ public class YachtDiceClient extends JFrame {
         if (!isScored[userNum][8]) {
             scoreLabels[userNum][8].setText(String.valueOf(totalScore()));
             scoreLabels[userNum][8].setForeground(Color.GRAY);
+            scoreLabels[userNum][8].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             results += "초이스 ";
             hasResults = true;
