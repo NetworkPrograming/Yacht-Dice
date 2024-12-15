@@ -44,7 +44,7 @@ public class YachtDiceClient extends JFrame {
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 밑에는 게임창에 필요한 변수
 
-    private String[] User_Array_client = {"", "", "", ""};
+    private String[] User_Array_client = {null,null,null,null};
 
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpg")).getImage();
@@ -65,6 +65,8 @@ public class YachtDiceClient extends JFrame {
 
     int[] dices;
     int[] counts;
+    int turnIndex;
+    int turn; // 전체 턴
 
     boolean[][] isScored; //점수등록여부
 
@@ -72,6 +74,7 @@ public class YachtDiceClient extends JFrame {
     int[][] userScore; //유저 점수
     int userNum;
     String[] userName;
+    int turnUser;
 
     int[] totalScore; //총점
     int[] middleScore; //에이스 ~ 헥사까지 점수
@@ -79,9 +82,11 @@ public class YachtDiceClient extends JFrame {
 
     JLabel[][] scoreLabels;
     JLabel[] userLabels;
+    JLabel l_turn;
 
     Random rand;
     int user1 = 0;
+    private String currentTurn;
 
     int check_game_start = 0; // 게임 시작을 하기 위한 인원 체크용 변수
     JPanel dice_panel = new JPanel();
@@ -89,6 +94,8 @@ public class YachtDiceClient extends JFrame {
     // 굴리기 버튼 생성
     JButton b_roll;
     JButton b_game_start;
+
+    int userCount;
 
     public void GameGUI() {
 
@@ -99,6 +106,12 @@ public class YachtDiceClient extends JFrame {
         isScored = new boolean[4][15];
         totalScore = new int[4];
         middleScore = new int[4];
+        turnUser = 0;
+
+        userCount = 0;
+        turn = 1;
+
+
 
         rand = new Random();
 
@@ -182,6 +195,16 @@ public class YachtDiceClient extends JFrame {
         panel.setBounds(0, 0, 400, 750);
         panel.setLayout(null);
         int user, i;
+
+        //턴 라벨 관리
+        l_turn = new JLabel("1");
+        l_turn.setBounds(38, 65, 100, 100);
+        l_turn.setForeground(Color.YELLOW);
+        l_turn.setFont(new Font("Arial", Font.BOLD, 20));
+        l_turn.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(l_turn);
+
+
         // 유저별 점수칸 관리 (4명의 유저, 각 15개의 점수칸)
         scoreLabels = new JLabel[4][15];
         userLabels = new JLabel[4];
@@ -274,12 +297,13 @@ public class YachtDiceClient extends JFrame {
                 // 클릭된 라벨을 가져오기
                 String text = label.getText().trim(); // 공백 제거
 
-                // 디버깅: 텍스트 값 확인
                 System.out.println("Label Text: '" + text + "'");
+                //printDisplay2("현재 턴 : " + currentTurn);
 
                 try {
                     // 텍스트가 비어 있거나 숫자가 아니면 예외 발생
-                    if (text.isEmpty()) {
+                    if (!Objects.equals(currentTurn, uid)) {
+                        printDisplay2("현재 턴이 아니므로 클릭할 수 없습니다.");
                         throw new NumberFormatException("Text is empty.");
                     }
 
@@ -442,7 +466,13 @@ public class YachtDiceClient extends JFrame {
             jPanel.add(b_dices[i]);
             b_dices[i].setVisible(true);
         }
-
+        turnIndex = 0;
+        currentTurn = User_Array_client[0];
+        for (String s : User_Array_client) {
+            if (s != "") { // null이 아닌 유저만 카운트
+                userCount++;
+            }
+        }
         jPanel.repaint();
         jPanel.revalidate();
     }
@@ -465,12 +495,14 @@ public class YachtDiceClient extends JFrame {
         button.putClientProperty("isSaved", false); // 저장 여부 초기화
 
         button.addActionListener(e -> {
-            boolean isSaved = !(boolean) button.getClientProperty("isSaved");
-            button.putClientProperty("isSaved", isSaved); // 상태 토글
-            if (isSaved) {
-                button.setLocation(button.getX(), button.getY() - 130); // 저장 시 위치 변경
-            } else {
-                button.setLocation(button.getX(), button.getY() + 130); // 해제 시 원위치
+            if(Objects.equals(currentTurn, uid)){
+                boolean isSaved = !(boolean) button.getClientProperty("isSaved");
+                button.putClientProperty("isSaved", isSaved); // 상태 토글
+                if (isSaved) {
+                    button.setLocation(button.getX(), button.getY() - 130); // 저장 시 위치 변경
+                } else {
+                    button.setLocation(button.getX(), button.getY() + 130); // 해제 시 원위치
+                }
             }
         });
         return button;
@@ -521,8 +553,8 @@ public class YachtDiceClient extends JFrame {
     private void setupRollButton(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
         boolean allSaved = checkIfAllSaved(b_dices); // 주사위 상태 확인
 
-        if (!allSaved) {
-            // 모든 주사위가 저장되지 않은 경우에만 리스너 추가
+        if (Objects.equals(currentTurn, uid)) {
+            // 모든 주사위가 저장되지 않은 경우, 현재 턴인 유저에만 리스너 추가
             handleRollAction(b_roll, b_dices, jPanel);
         } else {
             b_roll.setEnabled(false); // 모든 주사위가 저장된 경우 버튼 비활성화
@@ -756,13 +788,6 @@ public class YachtDiceClient extends JFrame {
 
     }
 
-//    private void startTurn(){ // 턴 시작
-//        b_roll.setEnabled(true);
-//        for (int i = 0; i < DICE_SIZE; i++){
-//            b_dices[i].setEnabled(true);
-//        }
-//    }
-
     private void countDices(int userNum) { //굴린 주사위 수 저장
         Arrays.fill(counts, 0); //count 0으로 초기화
 
@@ -840,6 +865,36 @@ public class YachtDiceClient extends JFrame {
         return total;
     }
 
+    public void nextTurn() {
+        turnIndex = (turnIndex + 1) % userCount;
+
+        checkRoll = 0; // 주사위 굴린 횟수 초기화 후 UI 재설정
+        b_roll.setEnabled(true); // 굴리기 버튼 활성화
+
+        for (int i = 0; i < DICE_SIZE; i++) {
+            // 주사위 저장 상태 해제
+            b_dices[i].putClientProperty("isSaved", false);
+
+            // 주사위 원래 위치로 복귀
+            b_dices[i].setLocation(b_dices[i].getX(), 210);
+
+            // 버튼 활성화
+            b_dices[i].setEnabled(true);
+        }
+
+        if (turnIndex == 0) { // turnIndex가 유저 수와 같으면 turn 증가
+                turn++;  // 전체 턴 수 증가
+            }
+        if (turn==13) { //턴 12가 끝나면
+            //게임 끝 로직 작성하기
+        }
+        currentTurn = User_Array_client[turnIndex];
+        printDisplay2("턴 " + turn + ", " + currentTurn + "의 차례");
+
+        ////
+        l_turn.setText(String.valueOf(turn));
+    }
+
     // 클라이언트에서 점수 업데이트 요청 보내기
     public void sendScoreUpdate(int userNum, int scoreIndex, int score, DataOutputStream out) {
         try {
@@ -879,8 +934,12 @@ public class YachtDiceClient extends JFrame {
                 break; // 유저를 찾으면 더 이상 탐색하지 않음
             }
         }
-        printDisplay2(uid + "입장번호 : " + userNum);
+        //printDisplay2(uid + "입장번호 : " + userNum);
         return userNum;
+    }
+
+    private void setTurn(int userNum){
+        // userNum 1이라하면 1번라인 뺴고 점수칸 전부 클릭 불가
     }
 
     private void playSound(String soundFile) {
@@ -1138,7 +1197,7 @@ public class YachtDiceClient extends JFrame {
                             // Yacht.java 코드에서 원래 message 변수 1개짜리였는데 지금은 2개짜리로 바뀌어서 roomTitle 변수까지 사용돼요
                             if (roomTitle_copy.equals(inMsg.roomTitle)) {
                                 String message = inMsg.message;
-                                printDisplay2("서버로부터 받은 점수 정보: " + message);
+                                //printDisplay2("서버로부터 받은 점수 정보: " + message);
 
                                 // 메시지에서 점수 정보 추출
                                 String[] parts = message.split(", ");
@@ -1154,10 +1213,15 @@ public class YachtDiceClient extends JFrame {
 
                                 // 점수판에 반영하는 로직
                                 updateScore(userNum, scoreIndex, score, totalScore);
+                                nextTurn();
                             }
                             break;
                         case Yacht.MODE_GAME_START:
                             send_message_room_first(roomTitle_copy, "게임 시작!");
+                            for(int i=0;i<4;i++){
+                                printDisplay2("순서 : " + i + "-" + User_Array_client[i]);
+                            }
+                            printDisplay2("턴 " + turn + ", " + User_Array_client[0] + "의 차례");
                             break;
                         case Yacht.MODE_HOW_MANY_PEOPLE:
                             if (inMsg.message.equals("게임이 시작되려면 2명 이상이 방에 입장해 있어야 합니다.")) {
