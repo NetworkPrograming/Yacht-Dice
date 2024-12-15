@@ -128,7 +128,7 @@ public class YachtDiceClient extends JFrame {
         layeredPane.add(chatPanel, Integer.valueOf(2)); // 레이어 2에 채팅판 추가
 
         // 주사위 패널을 레이어 10에 추가
-        JPanel dicePanel = AddDiceComponents(userNum);
+        JPanel dicePanel = AddDiceComponents();
         dicePanel.setBounds(430, 0, 750, 750);
         layeredPane.add(dicePanel, Integer.valueOf(10)); // 레이어 10에 주사위 패널 추가
 
@@ -374,7 +374,7 @@ public class YachtDiceClient extends JFrame {
         }
     }
 
-    private JPanel AddDiceComponents(int userNum) {
+    private JPanel AddDiceComponents() {
         JPanel jPanel = new JPanel();
         JButton[] b_dices = new JButton[DICE_SIZE];
         jPanel.setOpaque(false); // 패널을 투명하게 설정
@@ -385,7 +385,7 @@ public class YachtDiceClient extends JFrame {
 
         // 굴리기 버튼 생성
         JButton b_roll = createRollButton();
-        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel, userNum)); // 버튼 액션 연결
+        b_roll.addActionListener(e -> setupRollButton(b_roll, b_dices, jPanel)); // 버튼 액션 연결
 
         JButton b_game_start = game_start_Button();
         check_game_start = 0;
@@ -479,12 +479,12 @@ public class YachtDiceClient extends JFrame {
         return button;
     }
 
-    private void setupRollButton(JButton b_roll, JButton[] b_dices, JPanel jPanel, int userNum) {
+    private void setupRollButton(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
         boolean allSaved = checkIfAllSaved(b_dices); // 주사위 상태 확인
 
         if (!allSaved) {
             // 모든 주사위가 저장되지 않은 경우에만 리스너 추가
-            handleRollAction(b_roll, b_dices, jPanel, userNum);
+            handleRollAction(b_roll, b_dices, jPanel);
         } else {
             b_roll.setEnabled(false); // 모든 주사위가 저장된 경우 버튼 비활성화
             for (int i = 0; i < DICE_SIZE; i++) {
@@ -493,7 +493,7 @@ public class YachtDiceClient extends JFrame {
         }
     }
 
-    private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel, int userNum) {
+    private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
         b_roll.setEnabled(false); // 굴리기 버튼 비활성화
         checkRoll++;
 
@@ -510,6 +510,7 @@ public class YachtDiceClient extends JFrame {
             if (elapsed >= 2) { // 2초 후 굴리기 종료
                 timer.stop();
                 finalizeRoll(b_roll, b_dices, jPanel);
+                setUserNum(uid);
                 available(userNum);
 
             } else {
@@ -788,14 +789,13 @@ public class YachtDiceClient extends JFrame {
     }
 
     private int setUserNum(String userId) {
-        System.out.println("Current User: " + userId);
         for (int i = 0; i < 4; i++) {
             if (userId.equals(User_Array_client[i])) {
                 userNum = i;
                 break; // 유저를 찾으면 더 이상 탐색하지 않음
             }
         }
-        printDisplay2(userId + ":" + userNum);
+        printDisplay2(uid + "입장번호 : " + userNum);
         return userNum;
     }
 
@@ -1023,7 +1023,6 @@ public class YachtDiceClient extends JFrame {
                             if (roomTitle_copy.equals(inMsg.roomTitle)) { // 입장한 방과 채팅을 친 방이 같다면
                                 // 만약 입장을 하지 않았으면 방 이름은 없을것이고 다른 방에 입장했다면 조건에 만족하지 않을 것임
                                 printDisplay2(inMsg.userID + ": " + inMsg.message);
-                                userNum = setUserNum(inMsg.userID);
                             }
                             break;
                         case Yacht.MODE_TX_STRING_ROOM_FIRST:
@@ -1045,7 +1044,6 @@ public class YachtDiceClient extends JFrame {
                                     printDisplay2(User_Array_client[i]);
                                 }
                                 setUser();
-                                printDisplay2(String.valueOf(userNum));
                             }
                             break;
                         case Yacht.MODE_TX_STRING_SCORE: // 점수 받기
