@@ -2,6 +2,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -189,7 +190,7 @@ public class YachtDiceClient extends JFrame {
 
         for (user = 0; user < 4; user++) {
             userLabels[user] = new JLabel();
-            userLabels[user].setBounds(85 + (user * 65), 50, 180, 60);
+            userLabels[user].setBounds(141 + (user * 65), 50, 60, 60);
             userLabels[user].setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(userLabels[user]);
         }
@@ -199,7 +200,7 @@ public class YachtDiceClient extends JFrame {
             for (i = 0; i < 6; i++) {
                 scoreLabels[user][i] = new JLabel();
                 // 점수칸 위치 설정
-                scoreLabels[user][i].setBounds(85 + (user * 65), 126 + (i * 37), 180, 60);
+                scoreLabels[user][i].setBounds(140 + (user * 65), 137 + (i * 37), 65, 38);
                 scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
                 panel.add(scoreLabels[user][i]);
 
@@ -210,7 +211,7 @@ public class YachtDiceClient extends JFrame {
 
         for (user = 0; user < 4; user++) { //// 윗부분 점수 합
             scoreLabels[user][6] = new JLabel();
-            scoreLabels[user][6].setBounds(70 + (user * 65), 342, 180, 60);
+            scoreLabels[user][6].setBounds(140 + (user * 65), 355, 65, 35);
             scoreLabels[user][6].setHorizontalAlignment(SwingConstants.CENTER);
             scoreLabels[user][6].setForeground(Color.WHITE);
             panel.add(scoreLabels[user][6]);
@@ -221,7 +222,7 @@ public class YachtDiceClient extends JFrame {
 
         for (user = 0; user < 4; user++) { //0 또는 35
             scoreLabels[user][7] = new JLabel();
-            scoreLabels[user][7].setBounds(85 + (user * 65), 375, 180, 60);
+            scoreLabels[user][7].setBounds(140 + (user * 65), 390, 65, 35);
             scoreLabels[user][7].setHorizontalAlignment(SwingConstants.CENTER);
             scoreLabels[user][7].setForeground(Color.WHITE);
             panel.add(scoreLabels[user][7]);
@@ -232,7 +233,7 @@ public class YachtDiceClient extends JFrame {
 
         for (user = 0; user < 4; user++) { //초이스
             scoreLabels[user][8] = new JLabel();
-            scoreLabels[user][8].setBounds(85 + (user * 65), 433, 180, 60);
+            scoreLabels[user][8].setBounds(140 + (user * 65), 448, 65, 35);
             scoreLabels[user][8].setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(scoreLabels[user][8]);
 
@@ -244,7 +245,7 @@ public class YachtDiceClient extends JFrame {
             for (i = 9; i < 14; i++) {
                 scoreLabels[user][i] = new JLabel();
                 // 점수칸 위치 설정
-                scoreLabels[user][i].setBounds(85 + (user * 65), 480 + ((i - 9) * 37), 180, 60);
+                scoreLabels[user][i].setBounds(140 + (user * 65), 493 + ((i - 9) * 36), 65, 35);
                 scoreLabels[user][i].setHorizontalAlignment(SwingConstants.CENTER);
                 panel.add(scoreLabels[user][i]);
 
@@ -255,19 +256,21 @@ public class YachtDiceClient extends JFrame {
 
         for (user = 0; user < 4; user++) { //총점
             scoreLabels[user][14] = new JLabel();
-            scoreLabels[user][14].setBounds(85 + (user * 65), 680, 180, 60);
+            scoreLabels[user][14].setBounds(140 + (user * 65), 680, 65, 56);
             scoreLabels[user][14].setHorizontalAlignment(SwingConstants.CENTER);
-            scoreLabels[user][7].setForeground(Color.WHITE);
             panel.add(scoreLabels[user][14]);
 
             //클릭 이벤트 리스너 추가
-            addLabelClickListener(scoreLabels[user][14], user, 14);
         }
 
         return panel;
     }
 
     private void addLabelClickListener(JLabel label, int user, int scoreIndex) {
+        // user와 scoreIndex를 final로 선언
+        final int finalUser = user;
+        final int finalScoreIndex = scoreIndex;
+
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -287,14 +290,14 @@ public class YachtDiceClient extends JFrame {
                     int score = Integer.parseInt(text);
 
                     // 점수 저장
-                    userScore[user][scoreIndex] = score;
-                    isScored[user][scoreIndex] = true; // 저장 상태 업데이트
+                    userScore[finalUser][finalScoreIndex] = score;
+                    isScored[finalUser][finalScoreIndex] = true; // 저장 상태 업데이트
 
                     // 라벨 색상 변경 및 총점 업데이트
                     label.setForeground(Color.BLACK);
-                    totalScore[user] += score;
-                    scoreLabels[user][14].setText(String.valueOf(totalScore[user])); // 총점 표시
-                    sendScoreToServer(uid, user, scoreIndex, score);
+                    totalScore[finalUser] += userScore[finalUser][finalScoreIndex];
+                    scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser])); // 총점 표시
+                    sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser]);
                 } catch (NumberFormatException ex) {
                     // 예외 발생 시 오류 메시지 출력
                     System.err.println("Invalid text for score: " + text);
@@ -303,6 +306,7 @@ public class YachtDiceClient extends JFrame {
             }
         });
     }
+
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
@@ -785,10 +789,10 @@ public class YachtDiceClient extends JFrame {
     }
 
     // 점수 갱신 메서드
-    public void sendScoreToServer(String userID, int userNum, int scoreIndex, int score) {
+    public void sendScoreToServer(String userID, int userNum, int scoreIndex, int score, int totalScore) {
         try {
             // 전송할 데이터 객체 생성
-            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score, roomTitle_copy);
+            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore, roomTitle_copy);
 
             // 데이터 전송
             out.writeObject(data); // 객체를 서버로 전송
@@ -801,8 +805,9 @@ public class YachtDiceClient extends JFrame {
     }
 
     // 점수 갱신 함수
-    public void updateScore(int userNum, int scoreIndex, int score) {
+    public void updateScore(int userNum, int scoreIndex, int score, int totalScore) {
         scoreLabels[userNum][scoreIndex].setText(String.valueOf(score));
+        scoreLabels[userNum][14].setText(String.valueOf(totalScore));
     }
 
     private int setUserNum(String userId) {
@@ -1078,13 +1083,15 @@ public class YachtDiceClient extends JFrame {
                                 String userNumStr = parts[0].split(": ")[1];
                                 String scoreIndexStr = parts[1].split(": ")[1];
                                 String scoreStr = parts[2].split(": ")[1];
+                                String totalScoreStr = parts[3].split(": ")[1];
 
                                 int userNum = Integer.parseInt(userNumStr);
                                 int scoreIndex = Integer.parseInt(scoreIndexStr);
                                 int score = Integer.parseInt(scoreStr);
+                                int totalScore = Integer.parseInt(totalScoreStr);
 
                                 // 점수판에 반영하는 로직
-                                updateScore(userNum, scoreIndex, score);
+                                updateScore(userNum, scoreIndex, score, totalScore);
                             }
                             break;
                         case Yacht.MODE_GAME_START:

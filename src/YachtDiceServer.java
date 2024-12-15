@@ -275,7 +275,7 @@ public class YachtDiceServer extends JFrame {
                     } else if (msg.mode == Yacht.MODE_TX_STRING_SCORE) {
                         String message = msg.message; // 클라이언트가 보낸 메시지
 
-                        // 메시지에서 "UserNum: 0, ScoreIndex: 1, Score: 10" 형태로 값을 추출하려면
+                        // 메시지에서 "UserNum: 0, ScoreIndex: 1, Score: 10, TotalScore: 100" 형태로 값을 추출하려면
                         printDisplay("받은 메시지: " + message);
 
                         // message에서 필요한 값 추출
@@ -283,14 +283,16 @@ public class YachtDiceServer extends JFrame {
                         String userNumStr = parts[0].split(": ")[1];  // "0" -> userNum
                         String scoreIndexStr = parts[1].split(": ")[1];  // "1" -> scoreIndex
                         String scoreStr = parts[2].split(": ")[1];  // "10" -> score
+                        String totalScoreStr = parts[3].split(": ")[1];
 
                         int userNum = Integer.parseInt(userNumStr);
                         int scoreIndex = Integer.parseInt(scoreIndexStr);
                         int score = Integer.parseInt(scoreStr);
-                        message = "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score;
+                        int totalScore = Integer.parseInt(totalScoreStr);
+                        message = "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore;
                         msg.message = message;
 
-                        printDisplay("userNum: " + userNum + ", scoreIndex: " + scoreIndex + ", score: " + score);
+                        printDisplay("userNum: " + userNum + ", scoreIndex: " + scoreIndex + ", score: " + score + ", totalScore: " + totalScore);
 
                         // 해당 값을 다른 클라이언트로 브로드캐스팅
                         broadcasting(msg);
