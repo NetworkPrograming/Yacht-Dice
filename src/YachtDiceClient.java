@@ -364,8 +364,8 @@ public class YachtDiceClient extends JFrame {
                         scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser])); // 총점 표시
                         sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser], middleScore[finalUser], bonus);
 
-                        for(int i=0;i<15;i++){//해당 유저 점수 중 등록안된 점수 전부 초기화
-                            if(!isScored[finalUser][i]) {
+                        for (int i = 0; i < 15; i++) {//해당 유저 점수 중 등록안된 점수 전부 초기화
+                            if (!isScored[finalUser][i]) {
                                 scoreLabels[user][i].setText("");
                             }
                         }
@@ -681,8 +681,8 @@ public class YachtDiceClient extends JFrame {
         }
 
         // 점수판 클릭 불가
-        for (int user = 0; user<4; user++) {
-            for(int i=0;i<15; i++){
+        for (int user = 0; user < 4; user++) {
+            for (int i = 0; i < 15; i++) {
                 scoreLabels[user][i].setEnabled(false);
             }
         }
@@ -862,8 +862,8 @@ public class YachtDiceClient extends JFrame {
             hasResults = true;
         }
         if (!hasResults) { //어디에도 쓸게 없으면 빈 공간에 0을 써야함
-            for(int i = 0 ; i<15;i++){
-                if(!isScored[userNum][i]){ //점수 없는 공간 발견하면
+            for (int i = 0; i < 15; i++) {
+                if (!isScored[userNum][i]) { //점수 없는 공간 발견하면
                     scoreLabels[userNum][i].setText("0"); // 0점 가능
                     scoreLabels[userNum][i].setForeground(Color.GRAY);
                     scoreLabels[userNum][i].setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1025,7 +1025,7 @@ public class YachtDiceClient extends JFrame {
         for (int i = 0; i < 4; i++) {
             if (userId.equals(User_Array_client[i])) {
                 userNum = i;
-                userLabels[userNum].setForeground(new Color(86,145,255));
+                userLabels[userNum].setForeground(new Color(86, 145, 255));
                 break; // 유저를 찾으면 더 이상 탐색하지 않음
             }
         }
@@ -1383,15 +1383,34 @@ public class YachtDiceClient extends JFrame {
                                             }
                                         }
                                         int winner = 1;
+                                        int duplication = 0; // 공동순위 숫자
                                         for (int i = 0; i < 4; i++) {
                                             if (LAST_SORT[i] == 1000000 || LAST_STRING.equals("") || LAST_SORT[i] == 20000) {
                                             } else {
-                                                if (winner == 1) {
+                                                if (winner == 1) { // 1등이면
                                                     printDisplay2("** " + winner + "등 : " + LAST_STRING[i] + LAST_SORT[i] + " **");
                                                     winner++;
-                                                } else {
-                                                    printDisplay2(winner + "등 : " + LAST_STRING[i] + LAST_SORT[i]);
-                                                    winner++;
+                                                } else { // 1등이 아니면
+                                                    if (LAST_SORT[i] == LAST_SORT[i - 1]) { // 그 전 순위와 점수가 같다면
+                                                        winner--; // 공동 등수로 처리
+                                                        if (winner == 1) {
+                                                            printDisplay2("** " + winner + "등 : " + LAST_STRING[i] + LAST_SORT[i] + " **");
+                                                            winner++;
+                                                        } else {
+                                                            printDisplay2(winner - 1 + "등 : " + LAST_STRING[i] + LAST_SORT[i]);
+                                                            winner++;
+                                                        }
+                                                        duplication++;
+                                                    } else {
+                                                        if (duplication == 0) {
+                                                            printDisplay2(winner + "등 : " + LAST_STRING[i] + LAST_SORT[i]);
+                                                            winner++;
+                                                        } else {
+                                                            printDisplay2(winner + duplication + "등 : " + LAST_STRING[i] + LAST_SORT[i]);
+                                                            winner = winner + 1 + duplication;
+                                                            duplication = 0;
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
