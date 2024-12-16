@@ -344,6 +344,56 @@ public class YachtDiceServer extends JFrame {
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_MOVE_DICE) {
                         broadcasting(msg);
+                    } else if (msg.mode == Yacht.MODE_SURRENDER) {
+                        Room targetRoom = null;
+                        for (Room room : rooms) {
+                            if (room.getTitle().equals(msg.roomTitle)) {
+                                targetRoom = room;
+                                break;
+                            }
+                        }
+
+                        if (targetRoom != null) {
+                            int i = 0;
+
+                            // 방의 현재 참가자 수 확인
+                            int currentPeopleCount = targetRoom.getPeople().size();
+                            String message = "(" + targetRoom.getTitle() + ")" + " 방에서 (" + uid + ") 님이 항복하였습니다.";
+                            printDisplay(message);
+
+                            // 퇴장 메시지를 모든 클라이언트에게 방송
+                            msg.message = message;
+                            broadcasting(msg);
+
+                            // 방의 참가자 목록 출력
+                            List<String> people = targetRoom.getPeople(); // 사용자 목록 가져오기
+                            if (people.isEmpty()) {
+                                System.out.println("현재 (" + targetRoom.getTitle() + ") 방에 참가자가 없습니다.");
+                            } else {
+                                printDisplay("(" + targetRoom.getTitle() + ")" + " 방의 참가자 목록 :");
+                                for (String userID : people) {
+                                    printDisplay("- " + userID);
+                                    User_Array_server[i] = userID;
+                                    i++;
+                                }
+                                for (int k = i; k < 4; k++) {
+                                    User_Array_server[k] = "";
+                                }
+                                printDisplay("");
+                            }
+                            // 방에 더 이상 참가자가 없다면 방 삭제
+                            if (currentPeopleCount == 0) {
+                                rooms.remove(targetRoom); // 방 삭제
+                                printDisplay("현재 (" + targetRoom.getTitle() + ") 방에 참가자가 없어 방이 삭제되었습니다.");
+                            }
+                        } else {
+                            String message = "존재하지 않는 방입니다.";
+                            printDisplay(message);
+                            msg.message = message;
+                            send(msg);
+                        }
+                        sendRoomListToClients();
+                        refresh();
                     }
                 }
                 users.removeElement(this);

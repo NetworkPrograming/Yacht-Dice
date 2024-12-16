@@ -20,6 +20,7 @@ public class Yacht implements Serializable {
     public final static int MODE_HOW_MANY_PEOPLE = 0x20000;     // 0010 0000 0000 0000 0000
     public final static int MODE_SHOW_ROLLING_DICE = 0x40000;   // 0100 0000 0000 0000 0000
     public final static int MODE_MOVE_DICE = 0x80000;           // 1000 0000 0000 0000 0000
+    public final static int MODE_SURRENDER = 0x100000;          // 0001 0000 0000 0000 0000 0000
 
     String userID;
     int mode;
@@ -89,6 +90,9 @@ public class Yacht implements Serializable {
             this.roomTitle = message; // message를 message 사용
             this.message = passWord;
         } else if (code == MODE_MOVE_DICE) {
+            this.roomTitle = message; // message를 message 사용
+            this.message = passWord;
+        } else if (code == MODE_SURRENDER) {
             this.roomTitle = message; // message를 message 사용
             this.message = passWord;
         }

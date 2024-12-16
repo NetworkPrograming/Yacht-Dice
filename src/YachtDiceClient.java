@@ -302,7 +302,7 @@ public class YachtDiceClient extends JFrame {
                 try {
                     // 텍스트가 비어 있거나 숫자가 아니면 예외 발생
                     if (!Objects.equals(currentTurn, uid)) {
-                        printDisplay2("현재 턴이 아니므로 클릭할 수 없습니다.");
+                        printDisplay2("현재 " + uid + " 님의 턴이 아니므로 클릭할 수 없습니다.");
                         throw new NumberFormatException("Text is empty.");
                     }
 
@@ -397,7 +397,7 @@ public class YachtDiceClient extends JFrame {
         textArea.setCaretPosition(textArea.getDocument().getLength());
     }
 
-    private void setUser() { //유저리스트
+    private void setUser() { // 유저리스트
         for (int i = 0; i < 4; i++) {
             userLabels[i].setText(User_Array_client[i]);
         }
@@ -579,27 +579,14 @@ public class YachtDiceClient extends JFrame {
                 JOptionPane.YES_NO_OPTION
         );
 
-        if (choice == JOptionPane.YES_OPTION) {// 예를 누르면 항복 후 퇴장됨
-            this.dispose();
-            userLabels[userNum].setText("헤헤");
-            setUser();
-            //userLabels[userNum].setText("null"); // 유저 나간 자리 공백으로 두기
-            printDisplay2(String.valueOf(User_Array_client[userNum]));
-
-
-            YachtDiceClient.this.setVisible(true);
-            setVisible(false);
-            quit_room(roomTitle_copy);
-            printDisplay(roomTitle_copy + " 게임 방에서 퇴장하였습니다.");
+        if (choice == JOptionPane.YES_OPTION) {
+            surrender(roomTitle_copy);
             checkRoll = 0;
-
-//            JOptionPane.showMessageDialog(
-//                    null,
-//                    "항복하였습니다. 게임방을 퇴장합니다.",
-//                    null,
-//                    JOptionPane.INFORMATION_MESSAGE
-//            );
         }
+    }
+
+    private void surrender(String roomtitle) {
+        send(new Yacht(t_userID.getText(), Yacht.MODE_SURRENDER, roomtitle, "아무거나"));
     }
 
     private void handleRollAction(JButton b_roll, JButton[] b_dices, JPanel jPanel) {
@@ -901,7 +888,7 @@ public class YachtDiceClient extends JFrame {
             //게임 끝 로직 작성하기
         }
         currentTurn = User_Array_client[turnIndex];
-        printDisplay2("턴 " + turn + ", " + currentTurn + "의 차례");
+        printDisplay2("\n턴 " + turn + ", " + currentTurn + "의 차례");
 
         ////
         l_turn.setText(String.valueOf(turn));
@@ -1182,7 +1169,7 @@ public class YachtDiceClient extends JFrame {
                             break;
                         case Yacht.MODE_TX_STRING_ROOM_FIRST:
                             if (roomTitle_copy.equals(inMsg.roomTitle)) {
-                                // 방에 입장과 퇴장할때 채팅 뿌리기
+                                // 방에 입장과 퇴장 , 항복할 때 채팅 뿌리기
                                 String temp_message = inMsg.message;
                                 String[] parts = temp_message.split("!=!");
 
@@ -1194,12 +1181,18 @@ public class YachtDiceClient extends JFrame {
                                 }
 
                                 inMsg.message = parts[0];
-                                printDisplay2(inMsg.message);
                                 if (inMsg.message.equals("게임 시작!")) {
+                                    printDisplay2("\n" + inMsg.message);
                                     UI_update(dice_panel, b_game_start, b_roll, b_dices, b_giveup);
-                                }
-                                for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
-                                    printDisplay2(User_Array_client[i]);
+                                    for (int i = 0; i < 4; i++) {
+                                        printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
+                                    }
+                                    printDisplay2("\n턴 " + turn + ", " + User_Array_client[0] + "의 차례");
+//                                    for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
+//                                        printDisplay2(User_Array_client[i]);
+//                                    }
+                                } else {
+                                    printDisplay2(inMsg.message);
                                 }
                                 setUser();
                             }
@@ -1230,10 +1223,6 @@ public class YachtDiceClient extends JFrame {
                             break;
                         case Yacht.MODE_GAME_START:
                             send_message_room_first(roomTitle_copy, "게임 시작!");
-                            for (int i = 0; i < 4; i++) {
-                                printDisplay2("순서 : " + i + "-" + User_Array_client[i]);
-                            }
-                            printDisplay2("턴 " + turn + ", " + User_Array_client[0] + "의 차례");
                             break;
                         case Yacht.MODE_HOW_MANY_PEOPLE:
                             if (inMsg.message.equals("게임이 시작되려면 2명 이상이 방에 입장해 있어야 합니다.")) {
@@ -1259,6 +1248,18 @@ public class YachtDiceClient extends JFrame {
                                 int Y_location = Integer.parseInt(parts[1]);
                                 int dice_number = Integer.parseInt(parts[2]);
                                 b_dices[dice_number - 1].setLocation(X_location, Y_location); // 저장 시 위치 변경
+                            }
+                            break;
+                        case Yacht.MODE_SURRENDER:
+                            if (roomTitle_copy.equals(inMsg.roomTitle)) {
+                                printDisplay2(inMsg.userID + "님이 항복했습니다.");
+                                for (int i = 0; i < User_Array_client.length; i++) {
+                                    if (User_Array_client[i].equals(inMsg.userID)) {
+                                        User_Array_client[i] = "";
+                                        break;
+                                    }
+                                }
+                                setUser();
                             }
                             break;
                     }
