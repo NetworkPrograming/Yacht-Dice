@@ -96,6 +96,8 @@ public class YachtDiceClient extends JFrame {
     JButton b_game_start;
 
     int userCount;
+    int check_giveup = 0;
+    private int count = 0;
 
     public void GameGUI() {
 
@@ -110,7 +112,7 @@ public class YachtDiceClient extends JFrame {
 
         userCount = 0;
         turn = 1;
-
+        count = 0;
 
         rand = new Random();
 
@@ -294,7 +296,7 @@ public class YachtDiceClient extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                if(!isScored[finalUser][finalScoreIndex]) { //한번 클릭된 점수는 클릭 불가
+                if (!isScored[finalUser][finalScoreIndex]) { //한번 클릭된 점수는 클릭 불가
                     // 클릭된 라벨을 가져오기
                     String text = label.getText().trim(); // 공백 제거
 
@@ -312,14 +314,14 @@ public class YachtDiceClient extends JFrame {
                         int score = Integer.parseInt(text);
 
                         //에이스 ~ 헥사 클릭 시
-                        if(finalScoreIndex == 0 | finalScoreIndex == 1 | finalScoreIndex == 2 | finalScoreIndex == 3 || finalScoreIndex == 4 | finalScoreIndex == 5) {
+                        if (finalScoreIndex == 0 | finalScoreIndex == 1 | finalScoreIndex == 2 | finalScoreIndex == 3 || finalScoreIndex == 4 | finalScoreIndex == 5) {
                             middleScore[finalUser] += score; //중간점수 배열에 점수 추가
                             scoreLabels[finalUser][6].setText(String.valueOf(middleScore[finalUser])); //라벨에 표시
                             isScored[finalUser][6] = true; // 저장 상태 업데이트
                         }
 
                         //에이스 ~ 헥사 전부 값 들어있을 때
-                        if(middleScore[finalUser] >= 63) {
+                        if (middleScore[finalUser] >= 63) {
                             userScore[finalUser][7] = bonusScore; // 35점 추가
                             totalScore[finalUser] += bonusScore;
                             isScored[finalUser][7] = true; // 저장 상태 업데이트
@@ -351,7 +353,6 @@ public class YachtDiceClient extends JFrame {
             }
         });
     }
-
 
     private JPanel ChatPanel() { // 채팅 패널
         JPanel panel = new JPanel();
@@ -522,7 +523,7 @@ public class YachtDiceClient extends JFrame {
         b_dices[i].putClientProperty("isSaved", false); // 저장 여부 초기화
 
         b_dices[i].addActionListener(e -> {
-            if(checkRoll!=0){
+            if (checkRoll != 0) {
                 if (Objects.equals(currentTurn, uid)) {
                     boolean isSaved = !(boolean) b_dices[i].getClientProperty("isSaved");
                     b_dices[i].putClientProperty("isSaved", isSaved); // 상태 토글
@@ -608,7 +609,13 @@ public class YachtDiceClient extends JFrame {
 
         if (choice == JOptionPane.YES_OPTION) {
             surrender(roomTitle_copy);
+            if (uid.equals(User_Array_client[turnIndex])) {
+                sendScoreToServer(uid, 10000, 10000, 10000, 10000, 10000, 10000);
+            }
             checkRoll = 0;
+//            if (남아있는사람 1 명일 때 게임 종료){
+//                sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
+//            }
         }
     }
 
@@ -890,10 +897,13 @@ public class YachtDiceClient extends JFrame {
         return total;
     }
 
-
     public void nextTurn() {
         turnIndex = (turnIndex + 1) % userCount;
-
+        count++;
+        while (User_Array_client[turnIndex].isEmpty()) {
+            turnIndex++;
+            count++;
+        }
         checkRoll = 0; // 주사위 굴린 횟수 초기화 후 UI 재설정
         b_roll.setEnabled(true); // 굴리기 버튼 활성화
 
@@ -908,12 +918,12 @@ public class YachtDiceClient extends JFrame {
             // 버튼 활성화
             b_dices[i].setEnabled(true);
         }
-
-        if (turnIndex == 0) { // turnIndex가 유저 수와 같으면 turn 증가
-            turn++;  // 전체 턴 수 증가
-        }
+        turn = count / userCount + 1;
         if (turn == 13) { //턴 12가 끝나면
-            //게임 끝 로직 작성하기
+            sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
+        }
+        if (turn == 4) { // 테스트용 게임 종료 로직
+            sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
         }
         currentTurn = User_Array_client[turnIndex];
         printDisplay2("\n턴 " + turn + ", " + currentTurn + "의 차례");
@@ -938,9 +948,8 @@ public class YachtDiceClient extends JFrame {
             // 전송할 데이터 객체 생성
             Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore + ", MiddleScore: " + middleScore + ", Bonus: " + bonus, roomTitle_copy);
 
-            // 데이터 전송
-            out.writeObject(data); // 객체를 서버로 전송
-            out.flush(); // 즉시 서버로 전송
+            out.writeObject(data);
+            out.flush();
 
             System.out.println("데이터가 서버로 전송되었습니다.");
         } catch (IOException e) {
@@ -1228,8 +1237,6 @@ public class YachtDiceClient extends JFrame {
                             }
                             break;
                         case Yacht.MODE_TX_STRING_SCORE: // 점수 받기
-                            // if 문을 통해서 해당 방에만 정보 뿌리게 해놨습니다
-                            // Yacht.java 코드에서 원래 message 변수 1개짜리였는데 지금은 2개짜리로 바뀌어서 roomTitle 변수까지 사용돼요
                             if (roomTitle_copy.equals(inMsg.roomTitle)) {
                                 String message = inMsg.message;
                                 //printDisplay2("서버로부터 받은 점수 정보: " + message);
@@ -1249,9 +1256,14 @@ public class YachtDiceClient extends JFrame {
                                 int totalScore = Integer.parseInt(totalScoreStr);
                                 int middleScore = Integer.parseInt(middleScoreStr);
                                 int bonus = Integer.parseInt(bonusStr);
+                                if (userNum == 10000 && scoreIndex == 10000 && score == 10000 && totalScore == 10000) {
 
-                                // 점수판에 반영하는 로직
-                                updateScore(userNum, scoreIndex, score, totalScore, middleScore, bonus);
+                                } else if (userNum == 20000 && scoreIndex == 20000 && score == 20000 && totalScore == 20000) {
+                                    //게임 전부 종료시켜버리게
+                                } else {
+                                    // 점수판에 반영하는 로직
+                                    updateScore(userNum, scoreIndex, score, totalScore, middleScore, bonus);
+                                }
                                 nextTurn();
                             }
                             break;

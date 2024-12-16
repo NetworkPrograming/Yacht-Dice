@@ -298,7 +298,6 @@ public class YachtDiceServer extends JFrame {
 
                         printDisplay("userNum: " + userNum + ", scoreIndex: " + scoreIndex + ", score: " + score + ", totalScore: " + totalScore + ", middleScore: " + middleScore + ", bonus: " + bonus);
 
-                        // 해당 값을 다른 클라이언트로 브로드캐스팅
                         broadcasting(msg);
                     } else if (msg.mode == Yacht.MODE_GAME_START) {
                         Room targetRoom = null;
