@@ -984,10 +984,6 @@ public class YachtDiceClient extends JFrame {
             sendScoreToServer(uid, 30000, 30000, 30000, 30000, 30000, 30000);
             return;
         }
-        if (turn == 2) { // 테스트용 게임 종료 로직
-            sendScoreToServer(uid, 30000, 30000, 30000, 30000, 30000, 30000);
-            return;
-        }
         l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
         l_turn.setText(String.valueOf(turn));
     }
