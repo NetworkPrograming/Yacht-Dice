@@ -320,7 +320,8 @@ public class YachtDiceClient extends JFrame {
                     sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser]);
                 } catch (NumberFormatException ex) {
                     // 예외 발생 시 오류 메시지 출력
-                    System.err.println(e);
+                    System.err.println(ex);
+                    // 여기에 JOPTIONPANE 쓰면 클라이언트 멈춤...
                 }
             }
         });
