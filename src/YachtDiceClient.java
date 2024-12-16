@@ -207,7 +207,7 @@ public class YachtDiceClient extends JFrame {
         l_turn = new JLabel("1");
         l_turn.setBounds(38, 70, 100, 100);
         l_turn.setForeground(Color.YELLOW);
-        l_turn.setFont(new Font("Arial", Font.BOLD, 25));
+        l_turn.setFont(new Font("맑은 고딕", Font.BOLD, 25));
         l_turn.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(l_turn);
 
@@ -219,7 +219,7 @@ public class YachtDiceClient extends JFrame {
         for (user = 0; user < 4; user++) {
             userLabels[user] = new JLabel();
             userLabels[user].setBounds(141 + (user * 65), 50, 60, 60);
-            userLabels[user].setFont(new Font("Arial", Font.BOLD, 13));
+            userLabels[user].setFont(new Font("맑은 고딕", Font.BOLD, 13));
             userLabels[user].setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(userLabels[user]);
         }
@@ -227,7 +227,7 @@ public class YachtDiceClient extends JFrame {
         for (user = 0; user < 4; user++) { //라벨기본세팅
             for (i = 0; i < 15; i++) {
                 scoreLabels[user][i] = new JLabel();
-                scoreLabels[user][i].setFont(new Font("Arial", Font.BOLD, 17));
+                scoreLabels[user][i].setFont(new Font("맑은 고딕", Font.BOLD, 17));
 
 
                 //클릭 이벤트 리스너 추가
@@ -468,7 +468,7 @@ public class YachtDiceClient extends JFrame {
         l_nowTurn = new JLabel();
         l_nowTurn.setBounds(185, 0, 300, 50);
         l_nowTurn.setForeground(Color.BLACK);
-        l_nowTurn.setFont(new Font("Arial", Font.BOLD, 20));
+        l_nowTurn.setFont(new Font("맑은 고딕", Font.BOLD, 20));
         l_nowTurn.setHorizontalAlignment(SwingConstants.CENTER);
         dice_panel.add(l_nowTurn);
 
