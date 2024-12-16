@@ -284,15 +284,19 @@ public class YachtDiceServer extends JFrame {
                         String scoreIndexStr = parts[1].split(": ")[1];  // "1" -> scoreIndex
                         String scoreStr = parts[2].split(": ")[1];  // "10" -> score
                         String totalScoreStr = parts[3].split(": ")[1];
+                        String middleScoreStr = parts[4].split(": ")[1];
+                        String bonusStr = parts[5].split(": ")[1];
 
                         int userNum = Integer.parseInt(userNumStr);
                         int scoreIndex = Integer.parseInt(scoreIndexStr);
                         int score = Integer.parseInt(scoreStr);
                         int totalScore = Integer.parseInt(totalScoreStr);
-                        message = "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore;
+                        int middleScore = Integer.parseInt(middleScoreStr);
+                        int bonus = Integer.parseInt(bonusStr);
+                        message = "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore + ", MiddleScore: " + middleScore + ", Bonus: " + bonus;
                         msg.message = message;
 
-                        printDisplay("userNum: " + userNum + ", scoreIndex: " + scoreIndex + ", score: " + score + ", totalScore: " + totalScore);
+                        printDisplay("userNum: " + userNum + ", scoreIndex: " + scoreIndex + ", score: " + score + ", totalScore: " + totalScore + ", middleScore: " + middleScore + ", bonus: " + bonus);
 
                         // 해당 값을 다른 클라이언트로 브로드캐스팅
                         broadcasting(msg);

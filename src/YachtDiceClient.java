@@ -293,35 +293,60 @@ public class YachtDiceClient extends JFrame {
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // 클릭된 라벨을 가져오기
-                String text = label.getText().trim(); // 공백 제거
 
-                System.out.println("Label Text: '" + text + "'");
-                //printDisplay2("현재 턴 : " + currentTurn);
+                if(!isScored[finalUser][finalScoreIndex]) { //한번 클릭된 점수는 클릭 불가
+                    // 클릭된 라벨을 가져오기
+                    String text = label.getText().trim(); // 공백 제거
 
-                try {
-                    // 텍스트가 비어 있거나 숫자가 아니면 예외 발생
-                    if (!Objects.equals(currentTurn, uid)) {
-                        printDisplay2("현재 " + uid + " 님의 턴이 아니므로 클릭할 수 없습니다.");
-                        throw new NumberFormatException("Text is empty.");
+                    System.out.println("Label Text: '" + text + "'");
+                    //printDisplay2("현재 턴 : " + currentTurn);
+
+                    try {
+                        // 텍스트가 비어 있거나 숫자가 아니면 예외 발생
+                        if (!Objects.equals(currentTurn, uid)) {
+                            printDisplay2("현재 " + uid + " 님의 턴이 아니므로 클릭할 수 없습니다.");
+                            throw new NumberFormatException("Text is empty.");
+                        }
+
+                        // 정수로 변환
+                        int score = Integer.parseInt(text);
+
+                        //에이스 ~ 헥사 클릭 시
+                        if(finalScoreIndex == 0 | finalScoreIndex == 1 | finalScoreIndex == 2 | finalScoreIndex == 3 || finalScoreIndex == 4 | finalScoreIndex == 5) {
+                            middleScore[finalUser] += score; //중간점수 배열에 점수 추가
+                            scoreLabels[finalUser][6].setText(String.valueOf(middleScore[finalUser])); //라벨에 표시
+                            isScored[finalUser][6] = true; // 저장 상태 업데이트
+                        }
+
+                        //에이스 ~ 헥사 전부 값 들어있을 때
+                        if(middleScore[finalUser] >= 63) {
+                            userScore[finalUser][7] = bonusScore; // 35점 추가
+                            totalScore[finalUser] += bonusScore;
+                            isScored[finalUser][7] = true; // 저장 상태 업데이트
+                            scoreLabels[finalUser][7].setText(String.valueOf(bonusScore)); //라벨에도 반영
+                            scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser]));
+                        } else {
+                            userScore[finalUser][7] = 0;
+                            isScored[finalUser][7] = true; // 저장 상태 업데이트
+                            scoreLabels[finalUser][7].setText("0"); //라벨에도 반영
+                        }
+
+                        // 점수 저장
+                        userScore[finalUser][finalScoreIndex] = score;
+                        int bonus = userScore[finalUser][7];
+                        isScored[finalUser][finalScoreIndex] = true; // 저장 상태 업데이트
+
+                        // 라벨 색상 변경 및 총점 업데이트
+                        label.setForeground(Color.BLACK);
+                        totalScore[finalUser] += userScore[finalUser][finalScoreIndex];
+                        scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser])); // 총점 표시
+                        sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser], middleScore[finalUser], bonus);
+
+                        // userScore[finalUser][0] ~ [5]까지 모두 null이 아니면 [finalUser][7] = 35 하고 총점도 갱신
+                        // 유저수 센거를 빼고, 0 1 2 02 02
+
+                    } catch (NumberFormatException ex) {
                     }
-
-                    // 정수로 변환
-                    int score = Integer.parseInt(text);
-
-                    // 점수 저장
-                    userScore[finalUser][finalScoreIndex] = score;
-                    isScored[finalUser][finalScoreIndex] = true; // 저장 상태 업데이트
-
-                    // 라벨 색상 변경 및 총점 업데이트
-                    label.setForeground(Color.BLACK);
-                    totalScore[finalUser] += userScore[finalUser][finalScoreIndex];
-                    scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser])); // 총점 표시
-                    sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser]);
-                } catch (NumberFormatException ex) {
-                    // 예외 발생 시 오류 메시지 출력
-                    System.err.println(ex);
-                    // 여기에 JOPTIONPANE 쓰면 클라이언트 멈춤...
                 }
             }
         });
@@ -497,17 +522,19 @@ public class YachtDiceClient extends JFrame {
         b_dices[i].putClientProperty("isSaved", false); // 저장 여부 초기화
 
         b_dices[i].addActionListener(e -> {
-            if (Objects.equals(currentTurn, uid)) {
-                boolean isSaved = !(boolean) b_dices[i].getClientProperty("isSaved");
-                b_dices[i].putClientProperty("isSaved", isSaved); // 상태 토글
-                if (isSaved) {
-                    b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130); // 저장 시 위치 변경
-                    String temp = b_dices[i].getX() + "!=!" + b_dices[i].getY() + "!=!" + (i + 1);
-                    send_move_dice(roomTitle_copy, temp);
-                } else {
-                    b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() + 130); // 해제 시 원위치
-                    String temp = b_dices[i].getX() + "!=!" + b_dices[i].getY() + "!=!" + (i + 1);
-                    send_move_dice(roomTitle_copy, temp);
+            if(checkRoll!=0){
+                if (Objects.equals(currentTurn, uid)) {
+                    boolean isSaved = !(boolean) b_dices[i].getClientProperty("isSaved");
+                    b_dices[i].putClientProperty("isSaved", isSaved); // 상태 토글
+                    if (isSaved) {
+                        b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130); // 저장 시 위치 변경
+                        String temp = b_dices[i].getX() + "!=!" + b_dices[i].getY() + "!=!" + (i + 1);
+                        send_move_dice(roomTitle_copy, temp);
+                    } else {
+                        b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() + 130); // 해제 시 원위치
+                        String temp = b_dices[i].getX() + "!=!" + b_dices[i].getY() + "!=!" + (i + 1);
+                        send_move_dice(roomTitle_copy, temp);
+                    }
                 }
             }
         });
@@ -863,6 +890,7 @@ public class YachtDiceClient extends JFrame {
         return total;
     }
 
+
     public void nextTurn() {
         turnIndex = (turnIndex + 1) % userCount;
 
@@ -905,10 +933,10 @@ public class YachtDiceClient extends JFrame {
     }
 
     // 점수 갱신 메서드
-    public void sendScoreToServer(String userID, int userNum, int scoreIndex, int score, int totalScore) {
+    public void sendScoreToServer(String userID, int userNum, int scoreIndex, int score, int totalScore, int middleScore, int bonus) {
         try {
             // 전송할 데이터 객체 생성
-            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore, roomTitle_copy);
+            Yacht data = new Yacht(userID, Yacht.MODE_TX_STRING_SCORE, "UserNum: " + userNum + ", ScoreIndex: " + scoreIndex + ", Score: " + score + ", TotalScore: " + totalScore + ", MiddleScore: " + middleScore + ", Bonus: " + bonus, roomTitle_copy);
 
             // 데이터 전송
             out.writeObject(data); // 객체를 서버로 전송
@@ -921,9 +949,11 @@ public class YachtDiceClient extends JFrame {
     }
 
     // 점수 갱신 함수
-    public void updateScore(int userNum, int scoreIndex, int score, int totalScore) {
+    public void updateScore(int userNum, int scoreIndex, int score, int totalScore, int middleScore, int bonus) {
         scoreLabels[userNum][scoreIndex].setText(String.valueOf(score));
         scoreLabels[userNum][14].setText(String.valueOf(totalScore));
+        scoreLabels[userNum][6].setText(String.valueOf(middleScore));
+        scoreLabels[userNum][7].setText(String.valueOf(bonus));
     }
 
     private int setUserNum(String userId) {
@@ -1210,14 +1240,18 @@ public class YachtDiceClient extends JFrame {
                                 String scoreIndexStr = parts[1].split(": ")[1];
                                 String scoreStr = parts[2].split(": ")[1];
                                 String totalScoreStr = parts[3].split(": ")[1];
+                                String middleScoreStr = parts[4].split(": ")[1];
+                                String bonusStr = parts[5].split(": ")[1];
 
                                 int userNum = Integer.parseInt(userNumStr);
                                 int scoreIndex = Integer.parseInt(scoreIndexStr);
                                 int score = Integer.parseInt(scoreStr);
                                 int totalScore = Integer.parseInt(totalScoreStr);
+                                int middleScore = Integer.parseInt(middleScoreStr);
+                                int bonus = Integer.parseInt(bonusStr);
 
                                 // 점수판에 반영하는 로직
-                                updateScore(userNum, scoreIndex, score, totalScore);
+                                updateScore(userNum, scoreIndex, score, totalScore, middleScore, bonus);
                                 nextTurn();
                             }
                             break;
