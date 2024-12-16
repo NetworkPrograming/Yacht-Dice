@@ -45,6 +45,7 @@ public class YachtDiceClient extends JFrame {
     // 밑에는 게임창에 필요한 변수
 
     private String[] User_Array_client = {null, null, null, null};
+    private String[] User_Array_client_copy = {null, null, null, null};
 
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpg")).getImage();
@@ -99,6 +100,10 @@ public class YachtDiceClient extends JFrame {
     int userCount;
     int check_giveup = 0;
     private int count = 0;
+    private int count_giveup = 0;
+    private int totalScore_copy[] = new int[4];
+
+    JFrame newFrame;
 
     public void GameGUI() {
 
@@ -121,10 +126,11 @@ public class YachtDiceClient extends JFrame {
 
         System.setProperty("sun.java2d.uiScale", "1.0"); // DPI 스케일링 고정
 
-        JFrame newFrame = new JFrame(roomTitle_copy);
+        newFrame = new JFrame(roomTitle_copy);
         newFrame.setSize(1450, 770);
         newFrame.setLocationRelativeTo(null); // 화면 중앙에 위치
-        newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
+        //newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
+        newFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // 창이 닫힐 때 아무 동작도 하지 않도록 설정
         newFrame.setResizable(false); // 창 크기 조절 비활성화
 
         // 레이어드 페인(JLayeredPane) 생성
@@ -162,8 +168,6 @@ public class YachtDiceClient extends JFrame {
             }
         });
         send_message_room_first(roomTitle_copy, uid + "님이 입장했습니다.");
-
-
     }
 
     private JPanel BackgroundPanel() {
@@ -338,6 +342,7 @@ public class YachtDiceClient extends JFrame {
                         if (middleScore[finalUser] >= 63) {
                             userScore[finalUser][7] = bonusScore; // 35점 추가
                             totalScore[finalUser] += bonusScore;
+                            totalScore_copy[finalUser] += bonusScore;
                             isScored[finalUser][7] = true; // 저장 상태 업데이트
                             scoreLabels[finalUser][7].setText(String.valueOf(bonusScore)); //라벨에도 반영
                             scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser]));
@@ -355,6 +360,7 @@ public class YachtDiceClient extends JFrame {
                         // 라벨 색상 변경 및 총점 업데이트
                         label.setForeground(Color.BLACK);
                         totalScore[finalUser] += userScore[finalUser][finalScoreIndex];
+                        totalScore_copy[finalUser] += userScore[finalUser][finalScoreIndex];
                         scoreLabels[finalUser][14].setText(String.valueOf(totalScore[finalUser])); // 총점 표시
                         sendScoreToServer(uid, finalUser, finalScoreIndex, score, totalScore[finalUser], middleScore[finalUser], bonus);
 
@@ -640,10 +646,24 @@ public class YachtDiceClient extends JFrame {
             if (uid.equals(User_Array_client[turnIndex])) {
                 sendScoreToServer(uid, 10000, 10000, 10000, 10000, 10000, 10000);
             }
+            try {
+                // 스레드를 0.3초 동안 일시 중지
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                System.out.println("스레드가 중단되었습니다.");
+            }
             checkRoll = 0;
-//            if (남아있는사람 1 명일 때 게임 종료){
-//                sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
-//            }
+            //남아있는사람 1 명일 때 게임 종료
+            check_giveup = 0;
+            for (int i = 0; i < 4; i++) {
+                if (User_Array_client[i].length() < 1 || User_Array_client[i] == null) {
+                    check_giveup++;
+                }
+            }
+            if (check_giveup == 3) {
+                sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
+                return;
+            }
         }
     }
 
@@ -715,9 +735,6 @@ public class YachtDiceClient extends JFrame {
         for (int i = 0; i < DICE_SIZE; i++) {
             b_dices[i].setEnabled(true);
         }
-
-
-
         for (int i = 0; i < DICE_SIZE; i++) {
             if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
                 allSaved = false;
@@ -854,7 +871,6 @@ public class YachtDiceClient extends JFrame {
             }
             results += "빈공간에 0점 쓰기";
         }
-
         results += "]";
 
         scoreLabels[userNum][14].setText(String.valueOf(totalScore[userNum]));
@@ -945,6 +961,7 @@ public class YachtDiceClient extends JFrame {
         count++;
         while (User_Array_client[turnIndex].isEmpty()) {
             turnIndex++;
+            turnIndex = (turnIndex + 1) % userCount;
             count++;
         }
         checkRoll = 0; // 주사위 굴린 횟수 초기화 후 UI 재설정
@@ -962,16 +979,16 @@ public class YachtDiceClient extends JFrame {
             b_dices[i].setEnabled(true);
         }
         turn = count / userCount + 1;
-        if (turn == 13) { //턴 12가 끝나면
-            sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
-        }
-        if (turn == 4) { // 테스트용 게임 종료 로직
-            sendScoreToServer(uid, 20000, 20000, 20000, 20000, 20000, 20000);
-        }
         currentTurn = User_Array_client[turnIndex];
+        if (turn == 13) { //턴 12가 끝나면
+            sendScoreToServer(uid, 30000, 30000, 30000, 30000, 30000, 30000);
+            return;
+        }
+        if (turn == 2) { // 테스트용 게임 종료 로직
+            sendScoreToServer(uid, 30000, 30000, 30000, 30000, 30000, 30000);
+            return;
+        }
         l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
-
-        ////
         l_turn.setText(String.valueOf(turn));
     }
 
@@ -1232,7 +1249,6 @@ public class YachtDiceClient extends JFrame {
                                 if (Objects.equals(inMsg.userID, t_userID.getText())) {
                                     //System.out.println(inMsg.userID + "님이 " + inMsg.message + " 방에 접속");
                                     openRoomWindow(inMsg.message);
-
                                 }
                             }
                             break;
@@ -1252,11 +1268,12 @@ public class YachtDiceClient extends JFrame {
 
                                 for (int i = 1; i < parts.length; i++) {
                                     User_Array_client[i - 1] = parts[i];
+                                    User_Array_client_copy[i - 1] = parts[i];
                                 }
                                 for (int i = parts.length; i < 5; i++) {
                                     User_Array_client[i - 1] = "";
+                                    User_Array_client_copy[i - 1] = "";
                                 }
-
 
                                 inMsg.message = parts[0];
                                 if (inMsg.message.equals("게임 시작!")) {
@@ -1264,7 +1281,10 @@ public class YachtDiceClient extends JFrame {
                                     UI_update(dice_panel, b_game_start, b_roll, b_dices, b_giveup);
                                     setUserNum(uid);
                                     for (int i = 0; i < 4; i++) {
-                                        printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
+                                        if (User_Array_client[i].length() < 1 || User_Array_client[i] == null) {
+                                        } else {
+                                            printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
+                                        }
                                     }
                                     l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
 //                                    for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
@@ -1297,14 +1317,100 @@ public class YachtDiceClient extends JFrame {
                                 int middleScore = Integer.parseInt(middleScoreStr);
                                 int bonus = Integer.parseInt(bonusStr);
                                 if (userNum == 10000 && scoreIndex == 10000 && score == 10000 && totalScore == 10000) {
-
+                                    nextTurn();
                                 } else if (userNum == 20000 && scoreIndex == 20000 && score == 20000 && totalScore == 20000) {
-                                    //게임 전부 종료시켜버리게
+                                    printDisplay2("\n게임 종료!");
+                                    printDisplay2("결과 발표\n");
+                                    int check_winner = 0;
+                                    int count_winner = 0;
+                                    for (int i = 0; i < 4; i++) {
+                                        if (User_Array_client[i].length() > 1) {
+                                            count_winner++;
+                                            check_winner = i;
+                                        }
+                                    }
+                                    if (count_winner == 1) { // 나머지가 다 항복하고 한명만 남았을 경우
+                                        printDisplay2("** 1등 : " + User_Array_client[check_winner] + " **");
+                                        for (int i = 0; i < check_winner; i++) {
+                                            if (User_Array_client_copy[i].length() < 1 || User_Array_client_copy[i] == null) {
+                                            } else {
+                                                printDisplay2("항복 : " + User_Array_client_copy[i]);
+                                            }
+                                        }
+                                        for (int i = check_winner + 1; i < 4; i++) {
+                                            if (User_Array_client_copy[i].length() < 1 || User_Array_client_copy[i] == null) {
+                                            } else {
+                                                printDisplay2("항복 : " + User_Array_client_copy[i]);
+                                            }
+                                        }
+                                    }
+                                    newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                                } else if (userNum == 30000 && scoreIndex == 30000 && score == 30000 && totalScore == 30000) {
+                                    if (uid.equals(inMsg.userID)) {
+                                        printDisplay2("\n게임 종료!");
+                                        printDisplay2("결과 발표\n");
+
+                                        int LAST_SORT[] = new int[4];
+                                        int LAST_TEMP[] = new int[4];
+                                        String LAST_STRING[] = new String[4];
+                                        String LAST_STRING_COPY[] = new String[4];
+
+                                        for (int i = 0; i < 4; i++) {
+                                            if (User_Array_client_copy[i].length() < 1 || User_Array_client_copy[i] == null) {
+                                                LAST_SORT[i] = 1000000;
+                                                LAST_STRING[i] = "";
+                                            } else {
+                                                if (scoreLabels[i][14].getText() == null || scoreLabels[i][14].getText().equals("")) {
+                                                    LAST_SORT[i] = 1000000;
+                                                    LAST_STRING[i] = "";
+                                                } else {
+                                                    LAST_SORT[i] = Integer.parseInt(scoreLabels[i][14].getText());
+                                                    LAST_STRING[i] = User_Array_client_copy[i] + "  점수 : ";
+                                                }
+                                                if (!User_Array_client_copy[i].equals(User_Array_client[i])) {
+                                                    LAST_SORT[i] = 20000;
+                                                    LAST_STRING[i] = "항복 : " + User_Array_client_copy[i];
+                                                }
+                                            }
+                                        }
+
+                                        for (int i = 0; i < 3; i++) {
+                                            for (int j = i + 1; j < 4; j++) {
+                                                if (LAST_SORT[i] < LAST_SORT[j]) {
+                                                    int temp = LAST_SORT[i];
+                                                    LAST_SORT[i] = LAST_SORT[j];
+                                                    LAST_SORT[j] = temp;
+                                                    String temp_string = LAST_STRING[i];
+                                                    LAST_STRING[i] = LAST_STRING[j];
+                                                    LAST_STRING[j] = temp_string;
+                                                }
+                                            }
+                                        }
+                                        int winner = 1;
+                                        for (int i = 0; i < 4; i++) {
+                                            if (LAST_SORT[i] == 1000000 || LAST_STRING.equals("") || LAST_SORT[i] == 20000) {
+                                            } else {
+                                                if (winner == 1) {
+                                                    printDisplay2("** " + winner + "등 : " + LAST_STRING[i] + LAST_SORT[i] + " **");
+                                                    winner++;
+                                                } else {
+                                                    printDisplay2(winner + "등 : " + LAST_STRING[i] + LAST_SORT[i]);
+                                                    winner++;
+                                                }
+                                            }
+                                        }
+                                        for (int i = 0; i < 4; i++) {
+                                            if (LAST_SORT[i] == 20000) {
+                                                printDisplay2(LAST_STRING[i]);
+                                            }
+                                        }
+                                    }
+                                    newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                                 } else {
                                     // 점수판에 반영하는 로직
                                     updateScore(userNum, scoreIndex, score, totalScore, middleScore, bonus);
+                                    nextTurn();
                                 }
-                                nextTurn();
                             }
                             break;
                         case Yacht.MODE_GAME_START:
@@ -1339,7 +1445,7 @@ public class YachtDiceClient extends JFrame {
                         case Yacht.MODE_SURRENDER:
                             if (roomTitle_copy.equals(inMsg.roomTitle)) {
                                 printDisplay2(inMsg.userID + "님이 항복했습니다.");
-                                for (int i = 0; i < User_Array_client.length; i++) {
+                                for (int i = 0; i < 4; i++) {
                                     if (User_Array_client[i].equals(inMsg.userID)) {
                                         User_Array_client[i] = "";
                                         break;
