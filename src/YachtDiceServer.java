@@ -341,7 +341,8 @@ public class YachtDiceServer extends JFrame {
                             send(msg);
                         }
                     } else if (msg.mode == Yacht.MODE_SHOW_ROLLING_DICE) {
-
+                        broadcasting(msg);
+                    } else if (msg.mode == Yacht.MODE_MOVE_DICE) {
                         broadcasting(msg);
                     }
                 }

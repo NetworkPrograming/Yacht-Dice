@@ -44,7 +44,7 @@ public class YachtDiceClient extends JFrame {
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 밑에는 게임창에 필요한 변수
 
-    private String[] User_Array_client = {null,null,null,null};
+    private String[] User_Array_client = {null, null, null, null};
 
     private Image backgroundImage = new ImageIcon(getClass().getResource("/resources/background.jpg")).getImage();
     private Image scoreBoard = new ImageIcon(getClass().getResource("/resources/scoreBoard.jpg")).getImage();
@@ -110,7 +110,6 @@ public class YachtDiceClient extends JFrame {
 
         userCount = 0;
         turn = 1;
-
 
 
         rand = new Random();
@@ -461,7 +460,8 @@ public class YachtDiceClient extends JFrame {
         // 주사위 버튼 생성 및 추가
         for (int i = 0; i < DICE_SIZE; i++) {
             int xPosition = 110 + (i * 90); // x 좌표 동적 설정
-            b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210);
+            b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210, i, b_dices);
+            //printDisplay2(String.valueOf(i));
             b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
             jPanel.add(b_dices[i]);
             b_dices[i].setVisible(true);
@@ -487,25 +487,30 @@ public class YachtDiceClient extends JFrame {
         send(new Yacht(t_userID.getText(), Yacht.MODE_GAME_START, roomTitle_copy, "1"));
     }
 
-    private JButton createDiceButton(String imagePath, int x, int y) {
-        JButton button = ImgService.loadImage(imagePath);
-        button.setBounds(x, y, 80, 80);
-        //button.setContentAreaFilled(false); // 배경 제거
-        //button.setBorderPainted(false);    // 테두리 제거
-        button.putClientProperty("isSaved", false); // 저장 여부 초기화
+    private JButton createDiceButton(String imagePath, int x, int y, int i, JButton[] b_dices) {
+        b_dices[i] = ImgService.loadImage(imagePath);
+        char dice_number = imagePath.charAt(14);
+        b_dices[i].setBounds(x, y, 80, 80);
+        //b_dices[i].setContentAreaFilled(false); // 배경 제거
+        //b_dices[i].setBorderPainted(false);    // 테두리 제거
+        b_dices[i].putClientProperty("isSaved", false); // 저장 여부 초기화
 
-        button.addActionListener(e -> {
-            if(Objects.equals(currentTurn, uid)){
-                boolean isSaved = !(boolean) button.getClientProperty("isSaved");
-                button.putClientProperty("isSaved", isSaved); // 상태 토글
+        b_dices[i].addActionListener(e -> {
+            if (Objects.equals(currentTurn, uid)) {
+                boolean isSaved = !(boolean) b_dices[i].getClientProperty("isSaved");
+                b_dices[i].putClientProperty("isSaved", isSaved); // 상태 토글
                 if (isSaved) {
-                    button.setLocation(button.getX(), button.getY() - 130); // 저장 시 위치 변경
+                    b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130); // 저장 시 위치 변경
+                    String temp = b_dices[i].getX() + "!=!" + b_dices[i].getY() + "!=!" + (i + 1);
+                    send_move_dice(roomTitle_copy, temp);
                 } else {
-                    button.setLocation(button.getX(), button.getY() + 130); // 해제 시 원위치
+                    b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() + 130); // 해제 시 원위치
+                    String temp = b_dices[i].getX() + "!=!" + b_dices[i].getY() + "!=!" + (i + 1);
+                    send_move_dice(roomTitle_copy, temp);
                 }
             }
         });
-        return button;
+        return b_dices[i];
     }
 
     private JButton createRollButton() {
@@ -581,7 +586,6 @@ public class YachtDiceClient extends JFrame {
             printDisplay2(String.valueOf(User_Array_client[userNum]));
 
 
-
             YachtDiceClient.this.setVisible(true);
             setVisible(false);
             quit_room(roomTitle_copy);
@@ -636,6 +640,10 @@ public class YachtDiceClient extends JFrame {
         send(new Yacht(t_userID.getText(), Yacht.MODE_SHOW_ROLLING_DICE, roomTitle, message));
     }
 
+    private void send_move_dice(String roomTitle, String message) {
+        send(new Yacht(t_userID.getText(), Yacht.MODE_MOVE_DICE, roomTitle, message));
+    }
+
     private boolean checkIfAllSaved(JButton[] b_dices) {
         for (JButton diceButton : b_dices) {
             if (!(boolean) diceButton.getClientProperty("isSaved")) {
@@ -664,6 +672,8 @@ public class YachtDiceClient extends JFrame {
                     if (!(boolean) b_dices[i].getClientProperty("isSaved")) {
                         b_dices[i].putClientProperty("isSaved", true); // 모든 주사위 저장
                         b_dices[i].setLocation(b_dices[i].getX(), b_dices[i].getY() - 130); // 주사위 위치 이동
+                        String temp = b_dices[i].getX() + "!=!" + (b_dices[i].getY()) + "!=!" + (i + 1);
+                        send_move_dice(roomTitle_copy, temp);
                     }
                     b_dices[i].setEnabled(false); // 버튼 비활성화
                 }
@@ -877,15 +887,17 @@ public class YachtDiceClient extends JFrame {
 
             // 주사위 원래 위치로 복귀
             b_dices[i].setLocation(b_dices[i].getX(), 210);
+            String temp = b_dices[i].getX() + "!=!" + 210 + "!=!" + (i + 1);
+            send_move_dice(roomTitle_copy, temp);
 
             // 버튼 활성화
             b_dices[i].setEnabled(true);
         }
 
         if (turnIndex == 0) { // turnIndex가 유저 수와 같으면 turn 증가
-                turn++;  // 전체 턴 수 증가
-            }
-        if (turn==13) { //턴 12가 끝나면
+            turn++;  // 전체 턴 수 증가
+        }
+        if (turn == 13) { //턴 12가 끝나면
             //게임 끝 로직 작성하기
         }
         currentTurn = User_Array_client[turnIndex];
@@ -938,7 +950,7 @@ public class YachtDiceClient extends JFrame {
         return userNum;
     }
 
-    private void setTurn(int userNum){
+    private void setTurn(int userNum) {
         // userNum 1이라하면 1번라인 뺴고 점수칸 전부 클릭 불가
     }
 
@@ -1218,7 +1230,7 @@ public class YachtDiceClient extends JFrame {
                             break;
                         case Yacht.MODE_GAME_START:
                             send_message_room_first(roomTitle_copy, "게임 시작!");
-                            for(int i=0;i<4;i++){
+                            for (int i = 0; i < 4; i++) {
                                 printDisplay2("순서 : " + i + "-" + User_Array_client[i]);
                             }
                             printDisplay2("턴 " + turn + ", " + User_Array_client[0] + "의 차례");
@@ -1236,6 +1248,17 @@ public class YachtDiceClient extends JFrame {
                                 int temp_number = Character.getNumericValue(inMsg.message.charAt(19)); // 몇번 주사위
                                 char temp = inMsg.message.charAt(14);
                                 ImgService.updateImage(b_dices[temp_number], "resources/dice" + temp + ".png");
+                            }
+                            break;
+                        case Yacht.MODE_MOVE_DICE:
+                            if (roomTitle_copy.equals(inMsg.roomTitle)) {
+                                printDisplay2(inMsg.message);
+                                // resources.dice*.png* 문자열이 도착하는데 앞에있는 *은 temp변수에, 뒤에있는 *은 temp_number 변수에 넣는다
+                                String[] parts = inMsg.message.split("!=!");
+                                int X_location = Integer.parseInt(parts[0]);
+                                int Y_location = Integer.parseInt(parts[1]);
+                                int dice_number = Integer.parseInt(parts[2]);
+                                b_dices[dice_number - 1].setLocation(X_location, Y_location); // 저장 시 위치 변경
                             }
                             break;
                     }
