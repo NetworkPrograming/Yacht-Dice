@@ -889,7 +889,6 @@ public class YachtDiceClient extends JFrame {
             // 주사위 원래 위치로 복귀
             b_dices[i].setLocation(b_dices[i].getX(), 210);
             String temp = b_dices[i].getX() + "!=!" + 210 + "!=!" + (i + 1);
-            send_move_dice(roomTitle_copy, temp);
 
             // 버튼 활성화
             b_dices[i].setEnabled(true);
@@ -1253,8 +1252,8 @@ public class YachtDiceClient extends JFrame {
                             break;
                         case Yacht.MODE_MOVE_DICE:
                             if (roomTitle_copy.equals(inMsg.roomTitle)) {
-                                printDisplay2(inMsg.message);
-                                // resources.dice*.png* 문자열이 도착하는데 앞에있는 *은 temp변수에, 뒤에있는 *은 temp_number 변수에 넣는다
+                                // printDisplay2(inMsg.message);
+                                // x좌표!=!y좌표!=!주사위번호+1 형식으로 문자열이 반환됨
                                 String[] parts = inMsg.message.split("!=!");
                                 int X_location = Integer.parseInt(parts[0]);
                                 int Y_location = Integer.parseInt(parts[1]);
