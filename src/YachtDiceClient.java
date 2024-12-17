@@ -520,7 +520,7 @@ public class YachtDiceClient extends JFrame {
 
         // 주사위 버튼 생성 및 추가
         for (int i = 0; i < DICE_SIZE; i++) {
-            int xPosition = 110 + (i * 90); // x 좌표 동적 설정
+            int xPosition = 107 + (i * 95); // x 좌표 동적 설정
             b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210, i, b_dices);
             //printDisplay2(String.valueOf(i));
             b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
@@ -1281,8 +1281,8 @@ public class YachtDiceClient extends JFrame {
                                         } else {
                                             printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
                                         }
-                                        printDisplay2("------------------------------------");
                                     }
+                                    printDisplay2("------------------------------------");
                                     l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
 //                                    for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
 //                                        printDisplay2(User_Array_client[i]);
