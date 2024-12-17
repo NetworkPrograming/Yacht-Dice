@@ -1317,7 +1317,7 @@ public class YachtDiceClient extends JFrame {
                                     nextTurn();
                                 } else if (userNum == 20000 && scoreIndex == 20000 && score == 20000 && totalScore == 20000) {
                                     printDisplay2("------------------------------------");
-                                    printDisplay2("\n게임 종료!");
+                                    printDisplay2("게임 종료!");
                                     printDisplay2("결과 발표\n");
                                     int check_winner = 0;
                                     int count_winner = 0;
@@ -1345,7 +1345,8 @@ public class YachtDiceClient extends JFrame {
                                     newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                                 } else if (userNum == 30000 && scoreIndex == 30000 && score == 30000 && totalScore == 30000) {
                                     if (uid.equals(inMsg.userID)) {
-                                        printDisplay2("\n게임 종료!");
+                                        printDisplay2("------------------------------------");
+                                        printDisplay2("게임 종료!");
                                         printDisplay2("결과 발표\n");
 
                                         int LAST_SORT[] = new int[4];
@@ -1682,6 +1683,7 @@ public class YachtDiceClient extends JFrame {
                         t_userID.setEditable(false);
                         t_input.setEnabled(true);
                         b_send.setEnabled(true);
+                        t_IP.setEditable(false);
 
                         b_createRoom.setEnabled(true);
                     }
@@ -1710,6 +1712,7 @@ public class YachtDiceClient extends JFrame {
                 t_input.setEnabled(false);
                 b_send.setEnabled(false);
                 t_input.setText("");
+                t_IP.setEditable(true);
 
                 b_createRoom.setEnabled(false);
             }
@@ -1837,19 +1840,19 @@ public class YachtDiceClient extends JFrame {
 
         t_IP.setText(getLocalAddr());
         t_IP.setHorizontalAlignment(JTextField.CENTER);
-        t_IP.setBounds(40,0,120,30);
+        t_IP.setBounds(40,0,120,25);
 
         t_userID = new JTextField(12);
         Random random = new Random();
         t_userID.setText("도전자" + (random.nextInt(100) + 1));
         t_userID.setHorizontalAlignment(JTextField.CENTER);
-        t_userID.setBounds(210,0,120,30);
+        t_userID.setBounds(210,0,120,25);
         JLabel l_IP = new JLabel("IP: ");
-        l_IP.setBounds(20,0,50,30);
+        l_IP.setBounds(20,0,50,25);
         p.add(l_IP);
         p.add(t_IP);
         JLabel l_userID = new JLabel("아이디: ");
-        l_userID.setBounds(170,0,50,30);
+        l_userID.setBounds(170,0,50,25);
         p.add(l_userID);
         p.add(t_userID);
 
