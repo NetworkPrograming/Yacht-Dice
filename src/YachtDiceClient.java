@@ -129,8 +129,8 @@ public class YachtDiceClient extends JFrame {
         newFrame = new JFrame(roomTitle_copy);
         newFrame.setSize(1450, 770);
         newFrame.setLocationRelativeTo(null); // 화면 중앙에 위치
-        //newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
-        newFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // 창이 닫힐 때 아무 동작도 하지 않도록 설정
+        newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // 닫기 버튼 클릭 시 창만 닫힘
+        //newFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // 창이 닫힐 때 아무 동작도 하지 않도록 설정
         newFrame.setResizable(false); // 창 크기 조절 비활성화
 
         // 레이어드 페인(JLayeredPane) 생성
@@ -1273,6 +1273,7 @@ public class YachtDiceClient extends JFrame {
 
                                 inMsg.message = parts[0];
                                 if (inMsg.message.equals("게임 시작!")) {
+                                    newFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // 창이 닫힐 때 아무 동작도 하지 않도록 설정
                                     printDisplay2("\n" + inMsg.message);
                                     UI_update(dice_panel, b_game_start, b_roll, b_dices, b_giveup);
                                     setUserNum(uid);
