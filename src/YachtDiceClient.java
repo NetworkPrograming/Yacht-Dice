@@ -207,7 +207,7 @@ public class YachtDiceClient extends JFrame {
         l_turn = new JLabel("1");
         l_turn.setBounds(38, 70, 100, 100);
         l_turn.setForeground(Color.YELLOW);
-        l_turn.setFont(new Font("맑은 고딕", Font.BOLD, 22));
+        l_turn.setFont(new Font("맑은 고딕", Font.BOLD, 25));
         l_turn.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(l_turn);
 
@@ -520,7 +520,7 @@ public class YachtDiceClient extends JFrame {
 
         // 주사위 버튼 생성 및 추가
         for (int i = 0; i < DICE_SIZE; i++) {
-            int xPosition = 107 + (i * 95); // x 좌표 동적 설정 (110 + (i * 90))
+            int xPosition = 110 + (i * 90); // x 좌표 동적 설정
             b_dices[i] = createDiceButton("resources/dice" + (i + 1) + ".png", xPosition, 210, i, b_dices);
             //printDisplay2(String.valueOf(i));
             b_dices[i].putClientProperty("isSaved", false); // 초기값 설정
@@ -1282,7 +1282,6 @@ public class YachtDiceClient extends JFrame {
                                             printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
                                         }
                                     }
-                                    printDisplay2("------------------------------------");
                                     l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
 //                                    for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
 //                                        printDisplay2(User_Array_client[i]);
@@ -1316,7 +1315,6 @@ public class YachtDiceClient extends JFrame {
                                 if (userNum == 10000 && scoreIndex == 10000 && score == 10000 && totalScore == 10000) {
                                     nextTurn();
                                 } else if (userNum == 20000 && scoreIndex == 20000 && score == 20000 && totalScore == 20000) {
-                                    printDisplay2("------------------------------------");
                                     printDisplay2("\n게임 종료!");
                                     printDisplay2("결과 발표\n");
                                     int check_winner = 0;
@@ -1831,29 +1829,22 @@ public class YachtDiceClient extends JFrame {
     }
 
     private JPanel createInfoPanel() {
-        JPanel p = new JPanel();
-        p.setLayout(null);
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         t_IP = new JTextField(10);
 
         t_IP.setText(getLocalAddr());
         t_IP.setHorizontalAlignment(JTextField.CENTER);
-        t_IP.setBounds(50,0,100,30);
 
         t_userID = new JTextField(12);
         Random random = new Random();
         t_userID.setText("도전자" + (random.nextInt(100) + 1));
         t_userID.setHorizontalAlignment(JTextField.CENTER);
-        t_userID.setBounds(220,0,100,30);
 
-        JLabel l_IP = new JLabel("IP : ");
-        l_IP.setBounds(20,0,30,30);
-        p.add(l_IP);
+        p.add(new JLabel("IP:"));
         p.add(t_IP);
 
-        JLabel l_ID = new JLabel("아이디 : ");
-        l_ID.setBounds(170,0,50,30);
-        p.add(l_ID);
+        p.add(new JLabel("아이디:"));
         p.add(t_userID);
 
         return p;
