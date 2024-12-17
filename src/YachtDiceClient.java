@@ -1282,6 +1282,7 @@ public class YachtDiceClient extends JFrame {
                                             printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
                                         }
                                     }
+                                    printDisplay2("------------------------------------");
                                     l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
 //                                    for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
 //                                        printDisplay2(User_Array_client[i]);
@@ -1315,7 +1316,8 @@ public class YachtDiceClient extends JFrame {
                                 if (userNum == 10000 && scoreIndex == 10000 && score == 10000 && totalScore == 10000) {
                                     nextTurn();
                                 } else if (userNum == 20000 && scoreIndex == 20000 && score == 20000 && totalScore == 20000) {
-                                    printDisplay2("\n게임 종료!");
+                                    printDisplay2("------------------------------------");
+                                    printDisplay2("게임 종료!");
                                     printDisplay2("결과 발표\n");
                                     int check_winner = 0;
                                     int count_winner = 0;
@@ -1343,7 +1345,8 @@ public class YachtDiceClient extends JFrame {
                                     newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                                 } else if (userNum == 30000 && scoreIndex == 30000 && score == 30000 && totalScore == 30000) {
                                     if (uid.equals(inMsg.userID)) {
-                                        printDisplay2("\n게임 종료!");
+                                        printDisplay2("------------------------------------");
+                                        printDisplay2("게임 종료!");
                                         printDisplay2("결과 발표\n");
 
                                         int LAST_SORT[] = new int[4];
