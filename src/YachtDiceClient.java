@@ -1281,6 +1281,7 @@ public class YachtDiceClient extends JFrame {
                                         } else {
                                             printDisplay2("순서 : " + (i + 1) + " - " + User_Array_client[i]);
                                         }
+                                        printDisplay2("------------------------------------");
                                     }
                                     l_nowTurn.setText("Turn " + turn + ": " + currentTurn + "의 차례입니다");
 //                                    for (int i = 0; i < 4; i++) { // 유저 이름 채팅창에 출력
@@ -1315,6 +1316,7 @@ public class YachtDiceClient extends JFrame {
                                 if (userNum == 10000 && scoreIndex == 10000 && score == 10000 && totalScore == 10000) {
                                     nextTurn();
                                 } else if (userNum == 20000 && scoreIndex == 20000 && score == 20000 && totalScore == 20000) {
+                                    printDisplay2("------------------------------------");
                                     printDisplay2("\n게임 종료!");
                                     printDisplay2("결과 발표\n");
                                     int check_winner = 0;
@@ -1829,22 +1831,26 @@ public class YachtDiceClient extends JFrame {
     }
 
     private JPanel createInfoPanel() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel p = new JPanel(null);
 
         t_IP = new JTextField(10);
 
         t_IP.setText(getLocalAddr());
         t_IP.setHorizontalAlignment(JTextField.CENTER);
+        t_IP.setBounds(40,0,120,30);
 
         t_userID = new JTextField(12);
         Random random = new Random();
         t_userID.setText("도전자" + (random.nextInt(100) + 1));
         t_userID.setHorizontalAlignment(JTextField.CENTER);
-
-        p.add(new JLabel("IP:"));
+        t_userID.setBounds(210,0,120,30);
+        JLabel l_IP = new JLabel("IP: ");
+        l_IP.setBounds(20,0,50,30);
+        p.add(l_IP);
         p.add(t_IP);
-
-        p.add(new JLabel("아이디:"));
+        JLabel l_userID = new JLabel("아이디: ");
+        l_userID.setBounds(170,0,50,30);
+        p.add(l_userID);
         p.add(t_userID);
 
         return p;
